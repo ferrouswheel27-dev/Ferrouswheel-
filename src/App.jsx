@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
+const LOGO = "https://i.ibb.co/qFyWBp87/IMG-3739.png";
+
 const products = [
   {
     id: 1,
@@ -9,7 +11,7 @@ const products = [
     materials: "Stainless Steel · Brass · Copper",
     emoji: "📖",
     accent: "#E63946",
-    shapes: ["violin", "chef knife", "tools", "guitar"],
+    image: "https://i.ibb.co/PbsNT68/Photoroom-20260304-111937.jpg",
   },
   {
     id: 2,
@@ -19,7 +21,7 @@ const products = [
     materials: "Stainless Steel · Brass · Copper",
     emoji: "🔑",
     accent: "#FF6B35",
-    shapes: ["tennis racket", "cassette", "F1 car", "football"],
+    image: "https://i.ibb.co/C5JgT6jS/Photoroom-20260304-113441.jpg",
   },
   {
     id: 3,
@@ -29,7 +31,7 @@ const products = [
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     emoji: "🏷️",
     accent: "#E63946",
-    shapes: ["tennis player", "sneaker", "sports car", "hockey"],
+    image: "https://i.ibb.co/cX1ZTZ0t/Photoroom-20260304-121434.jpg",
   },
   {
     id: 4,
@@ -39,7 +41,7 @@ const products = [
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     emoji: "🏅",
     accent: "#FFD700",
-    shapes: ["hockey player", "multi-sport", "runner", "swimmer"],
+    image: "https://i.ibb.co/2Y7ZTLYK/Photoroom-20260304-122026.jpg",
   },
   {
     id: 5,
@@ -49,7 +51,7 @@ const products = [
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     emoji: "📿",
     accent: "#FF6B35",
-    shapes: ["dollar sign", "initials", "sport icon", "custom shape"],
+    image: "https://i.ibb.co/C5JgT6jS/Photoroom-20260304-113441.jpg",
   },
   {
     id: 6,
@@ -59,7 +61,7 @@ const products = [
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     emoji: "🕐",
     accent: "#E63946",
-    shapes: ["cricket", "football", "F1 tire", "skateboard"],
+    image: "https://i.ibb.co/8DshKsd1/IMG-4524.png",
   },
   {
     id: 7,
@@ -69,7 +71,7 @@ const products = [
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     emoji: "🏍️",
     accent: "#C0C0C0",
-    shapes: ["chopper", "vintage bike", "sports car", "go-kart"],
+    image: "https://i.ibb.co/wNCTFvs9/Photoroom-20260304-153127.jpg",
   },
 ];
 
@@ -106,8 +108,7 @@ function Navbar({ activeSection }) {
   return (
     <nav className="navbar">
       <div className="nav-logo" onClick={() => scrollTo("hero")}>
-        <span className="logo-fw">FERROUS</span>
-        <span className="logo-wheel">WHEEL</span>
+        <img src={LOGO} alt="Ferrous Wheel" style={{ height: "40px", width: "auto" }} />
       </div>
       <div className={`nav-links ${menuOpen ? "open" : ""}`}>
         {["products", "about", "order", "contact"].map((s) => (
@@ -180,7 +181,7 @@ function ProductCard({ product, index }) {
       onMouseLeave={() => setHovered(false)}
     >
       <div className="card-number">0{product.id}</div>
-      <div className="card-emoji">{product.emoji}</div>
+      {product.image && <img src={product.image} alt={product.name} style={{ width: "100%", height: "160px", objectFit: "cover", borderRadius: "4px", marginBottom: "16px" }} />}
       <h3 className="card-name">{product.name}</h3>
       <p className="card-tagline">"{product.tagline}"</p>
       <p className="card-desc">{product.description}</p>
