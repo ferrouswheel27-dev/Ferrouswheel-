@@ -367,7 +367,8 @@ function Contact() {
             <span className="contact-label">EMAIL</span>
             <span className="contact-value">ferrouswheel27@gmail.com</span>
           </a>
-          <a href="https://maps.google.com/?q=235/E+Bommasandra+Industrial+Area+Bangalore+560099" target="_blank" rel="noreferrer" className="contact-card">
+        <a href="https://maps.app.goo.gl/7Umhcvtc46e2WFeg7" target="_blank" rel="noreferrer" className="contact-card">
+
             <span className="contact-icon">📍</span>
             <span className="contact-label">WORKSHOP</span>
             <span className="contact-value">235/E Bommasandra Industrial Area, Bangalore 560099</span>
