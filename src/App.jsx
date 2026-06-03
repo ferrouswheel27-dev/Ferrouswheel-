@@ -11,10 +11,10 @@ const products = [
     description: "Playful metal bookmarks with cute hobby-themed shapes. Personalized with your name.",
     materials: "Stainless Steel · Brass · Copper",
     accent: "#E63946",
-    image: `${CLD}/Photoroom_20260304_111937_rndxay.jpg`,
+    image: `${CLD}/Photoroom_20260304_111937_eeelb5.jpg`,
     gallery: [
-      `${CLD}/Photoroom_20260304_111937_rndxay.jpg`,
-      `${CLD}/Photoroom_20260106_150230_xkplmq.jpg`,
+      `${CLD}/Photoroom_20260304_111937_eeelb5.jpg`,
+      `${CLD}/Photoroom_20260106_150230_srgjsu.jpg`,
     ],
   },
   {
@@ -24,12 +24,12 @@ const products = [
     description: "Fun custom metal keychains in any shape you love — sports, cars, music, you name it.",
     materials: "Stainless Steel · Brass · Copper",
     accent: "#FF6B35",
-    image: `${CLD}/Photoroom_20260304_113441_tyzabx.jpg`,
+    image: `${CLD}/Photoroom_20260304_113441_g30qtp.jpg`,
     gallery: [
-      `${CLD}/Photoroom_20260304_113441_tyzabx.jpg`,
-      `${CLD}/Photoroom_20260304_120831_bvmcwz.jpg`,
-      `${CLD}/Photoroom_20260304_111937_rndxay.jpg`,
-      `${CLD}/Photoroom_20260307_152338_kplmqr.jpg`,
+      `${CLD}/Photoroom_20260304_113441_g30qtp.jpg`,
+      `${CLD}/Photoroom_20260304_120831_srxvpo.jpg`,
+      `${CLD}/Photoroom_20260307_152338_sfesbn.jpg`,
+      `${CLD}/Photoroom_20260304_112748_qwu95i.jpg`,
     ],
   },
   {
@@ -39,11 +39,11 @@ const products = [
     description: "Custom nameplates featuring your passion — tennis, sneakers, cars — with your name.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#E63946",
-    image: `${CLD}/Photoroom_20260304_121434_stuvwx.jpg`,
+    image: `${CLD}/Photoroom_20260106_144610_hkysfs.jpg`,
     gallery: [
-      `${CLD}/Photoroom_20260304_121434_stuvwx.jpg`,
-      `${CLD}/Photoroom_20260304_121357_abcdef.jpg`,
-      `${CLD}/Photoroom_20260106_144610_ghijkl.jpg`,
+      `${CLD}/Photoroom_20260106_144610_hkysfs.jpg`,
+      `${CLD}/Photoroom_20260304_121434_l9xqgx.jpg`,
+      `${CLD}/Photoroom_20260304_121357_wivy4l.jpg`,
     ],
   },
   {
@@ -53,9 +53,9 @@ const products = [
     description: "Custom medal hangers that put your achievements on display — your sport, your style.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#FFD700",
-    image: `${CLD}/Photoroom_20260304_122026_mnopqr.jpg`,
+    image: `${CLD}/Photoroom_20260106_145241_suigyq.jpg`,
     gallery: [
-      `${CLD}/Photoroom_20260304_122026_mnopqr.jpg`,
+      `${CLD}/Photoroom_20260106_145241_suigyq.jpg`,
     ],
   },
   {
@@ -65,9 +65,9 @@ const products = [
     description: "Fun custom metal necklaces that let you wear your personality loud and proud.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#FF6B35",
-    image: `${CLD}/Photoroom_20260106_151606_stuvwx.jpg`,
+    image: `${CLD}/Photoroom_20260106_151606_ijijur.jpg`,
     gallery: [
-      `${CLD}/Photoroom_20260106_151606_stuvwx.jpg`,
+      `${CLD}/Photoroom_20260106_151606_ijijur.jpg`,
     ],
   },
   {
@@ -77,13 +77,12 @@ const products = [
     description: "Custom wall clocks where your favorite sport or hobby replaces the numbers.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#E63946",
-    image: `${CLD}/Photoroom_20260304_124020_cflekj.jpg`,
+    image: `${CLD}/Photoroom_20260304_124930_nnyeos.jpg`,
     gallery: [
-      `${CLD}/Photoroom_20260304_124020_cflekj.jpg`,
-      `${CLD}/Photoroom_20260304_124930_yzabcd.jpg`,
-      `${CLD}/Photoroom_20260304_124110_efghij.jpg`,
-      `${CLD}/IMG_4524_klmnop.png`,
-      `${CLD}/Photoroom_20260107_131931_qrstuv.jpg`,
+      `${CLD}/Photoroom_20260304_124930_nnyeos.jpg`,
+      `${CLD}/Photoroom_20260304_124110_zgtqyn.jpg`,
+      `${CLD}/IMG_4524_wamzit.png`,
+      `${CLD}/Photoroom_20260107_131931_yilnxv.jpg`,
     ],
   },
   {
@@ -96,7 +95,6 @@ const products = [
     image: `${CLD}/Photoroom_20260107_123614_qnwlfz.png`,
     gallery: [
       `${CLD}/Photoroom_20260107_123614_qnwlfz.png`,
-      `${CLD}/Photoroom_20260304_153127_wxyzab.jpg`,
     ],
   },
   {
@@ -106,9 +104,9 @@ const products = [
     description: "Custom metal pieces inspired by your favourite movies, shows, games and more.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#FFD700",
-    image: `${CLD}/IMG_4831_cdefgh.jpg`,
+    image: `${CLD}/IMG_4831_gwwcmr.jpg`,
     gallery: [
-      `${CLD}/IMG_4831_cdefgh.jpg`,
+      `${CLD}/IMG_4831_gwwcmr.jpg`,
     ],
   },
 ];
@@ -367,8 +365,7 @@ function Contact() {
             <span className="contact-label">EMAIL</span>
             <span className="contact-value">ferrouswheel27@gmail.com</span>
           </a>
-        <a href="https://maps.app.goo.gl/7Umhcvtc46e2WFeg7" target="_blank" rel="noreferrer" className="contact-card">
-
+          <a href="https://maps.app.goo.gl/7Umhcvtc46e2WFeg7" target="_blank" rel="noreferrer" className="contact-card">
             <span className="contact-icon">📍</span>
             <span className="contact-label">WORKSHOP</span>
             <span className="contact-value">235/E Bommasandra Industrial Area, Bangalore 560099</span>
@@ -475,7 +472,6 @@ export default function FerrousWheelWebsite() {
         .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0 24px 16px; }
         .card-materials { font-family: var(--font-cond); font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.3); margin: 0 24px 20px; }
         .card-cta { font-family: var(--font-cond); font-size: 12px; letter-spacing: 2px; color: var(--accent); margin: 0 24px; font-weight: 700; }
-        /* MODAL */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .modal { background: var(--dark); border: 1px solid var(--border); border-radius: 8px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
         .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; z-index: 10; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
