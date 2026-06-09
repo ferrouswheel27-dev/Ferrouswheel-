@@ -243,9 +243,9 @@ function Hero() {
   );
 }
 
-function ProductCard({ product, onClick }) {
+function ProductCard({ product, onClick, index }) {
   return (
-    <div className="product-card" style={{ "--accent": product.accent }} onClick={onClick}>
+    <div className="product-card reveal" style={{ "--accent": product.accent, "--reveal-delay": `${index * 0.07}s` }} onClick={onClick}>
       <div className="card-number">0{product.id}</div>
       <div className="card-image-wrap">
         <img src={product.image} alt={product.name} className="card-image" />
@@ -267,13 +267,13 @@ function Products() {
   const [selected, setSelected] = useState(null);
   return (
     <section id="products" className="products">
-      <div className="section-header">
+      <div className="section-header reveal">
         <span className="section-tag">WHAT WE MAKE</span>
         <h2 className="section-title">PRODUCT<br /><span className="outline-text">CATEGORIES</span></h2>
         <p className="section-sub">Every piece is custom. Every piece is metal. Every piece is yours.</p>
       </div>
       <div className="products-grid">
-        {products.map((p) => <ProductCard key={p.id} product={p} onClick={() => setSelected(p)} />)}
+        {products.map((p, i) => <ProductCard key={p.id} product={p} index={i} onClick={() => setSelected(p)} />)}
       </div>
       {selected && <GalleryModal product={selected} onClose={() => setSelected(null)} />}
     </section>
@@ -285,7 +285,7 @@ function About() {
     <section id="about" className="about">
       <MetalPattern />
       <div className="about-content">
-        <div className="about-text">
+        <div className="about-text reveal">
           <span className="section-tag">THE STORY</span>
           <h2 className="section-title">BUILT IN A<br /><span className="outline-text">WORKSHOP,</span><br />BORN FROM A DREAM.</h2>
           <p className="about-para">Meet Yousuf — in January 2025, he stood on top of a go-kart he built himself. That same day, he started dreaming about his next creation: a business.</p>
@@ -298,12 +298,12 @@ function About() {
           </div>
         </div>
         <div className="about-visual">
-          <div className="about-card">
+          <div className="about-card reveal" style={{ "--reveal-delay": "0.1s" }}>
             <div className="welder-icon">⚙️</div>
             <div className="about-quote">"With a full tank of petrol and a workshop where he can bring ideas to life — ready to craft your custom keepsake."</div>
             <div className="about-sig">— Yousuf, Founder</div>
           </div>
-          <div className="testimonial-card">
+          <div className="testimonial-card reveal" style={{ "--reveal-delay": "0.2s" }}>
             <div className="stars">★★★★★</div>
             <p>"This silhouette was created by an 18-year-old artist — and I'm honestly in awe of the detailing. Talent like this deserves to be seen."</p>
             <span className="testimonial-author">— Sandhya</span>
@@ -317,13 +317,13 @@ function About() {
 function HowToOrder() {
   return (
     <section id="order" className="how-to-order">
-      <div className="section-header">
+      <div className="section-header reveal">
         <span className="section-tag">SIMPLE PROCESS</span>
         <h2 className="section-title">HOW TO<br /><span className="outline-text">ORDER</span></h2>
       </div>
       <div className="steps-grid">
         {steps.map((step, i) => (
-          <div key={i} className="step-card">
+          <div key={i} className="step-card reveal" style={{ "--reveal-delay": `${i * 0.07}s` }}>
             <div className="step-num">{step.num}</div>
             <div className="step-content">
               <h4>{step.title}</h4>
@@ -345,27 +345,27 @@ function Contact() {
     <section id="contact" className="contact">
       <MetalPattern />
       <div className="contact-content">
-        <div className="section-header left">
+        <div className="section-header left reveal">
           <span className="section-tag">GET IN TOUCH</span>
           <h2 className="section-title">LET'S MAKE<br /><span className="outline-text">SOMETHING</span><br />COOL.</h2>
         </div>
         <div className="contact-cards">
-          <a href="https://wa.me/918105677799" target="_blank" rel="noreferrer" className="contact-card">
+          <a href="https://wa.me/918105677799" target="_blank" rel="noreferrer" className="contact-card reveal" style={{ "--reveal-delay": "0s" }}>
             <span className="contact-icon">📱</span>
             <span className="contact-label">WHATSAPP</span>
             <span className="contact-value">+91 81056 77799</span>
           </a>
-          <a href="https://instagram.com/ferrouswheel27" target="_blank" rel="noreferrer" className="contact-card">
+          <a href="https://instagram.com/ferrouswheel27" target="_blank" rel="noreferrer" className="contact-card reveal" style={{ "--reveal-delay": "0.07s" }}>
             <span className="contact-icon">📸</span>
             <span className="contact-label">INSTAGRAM</span>
             <span className="contact-value">@ferrouswheel27</span>
           </a>
-          <a href="mailto:ferrouswheel27@gmail.com" className="contact-card">
+          <a href="mailto:ferrouswheel27@gmail.com" className="contact-card reveal" style={{ "--reveal-delay": "0.14s" }}>
             <span className="contact-icon">✉️</span>
             <span className="contact-label">EMAIL</span>
             <span className="contact-value">ferrouswheel27@gmail.com</span>
           </a>
-          <a href="https://maps.app.goo.gl/7Umhcvtc46e2WFeg7" target="_blank" rel="noreferrer" className="contact-card">
+          <a href="https://maps.app.goo.gl/7Umhcvtc46e2WFeg7" target="_blank" rel="noreferrer" className="contact-card reveal" style={{ "--reveal-delay": "0.21s" }}>
             <span className="contact-icon">📍</span>
             <span className="contact-label">WORKSHOP</span>
             <span className="contact-value">235/E Bommasandra Industrial Area, Bangalore 560099</span>
@@ -399,6 +399,20 @@ export default function FerrousWheelWebsite() {
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const revealObserver = new IntersectionObserver(
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("visible");
+          revealObserver.unobserve(e.target);
+        }
+      }),
+      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+    );
+    document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
+    return () => revealObserver.disconnect();
   }, []);
 
   return (
@@ -449,6 +463,23 @@ export default function FerrousWheelWebsite() {
         .floating-icon { font-size: 32px; text-align: center; animation: float 3s ease-in-out infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes heroIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.5); } 50% { box-shadow: 0 0 0 6px rgba(230,57,70,0); } }
+        .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22,1,0.36,1); transition-delay: var(--reveal-delay, 0s); will-change: opacity, transform; }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .hero-badge { animation: heroIn 0.6s ease both; }
+        .hero-line1 { animation: heroIn 0.6s ease both 0.1s; }
+        .hero-line2 { animation: heroIn 0.6s ease both 0.2s; }
+        .hero-line3 { animation: heroIn 0.6s ease both 0.3s; }
+        .hero-accent { animation: heroIn 0.6s ease both 0.4s; }
+        .hero-tagline { animation: heroIn 0.6s ease both 0.5s; }
+        .hero-actions { animation: heroIn 0.6s ease both 0.6s; }
+        .hero-stats { animation: heroIn 0.6s ease both 0.7s; }
+        .nav-cta { animation: pulseGlow 2.6s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .reveal { opacity: 1; transform: none; transition: none; }
+          .hero-badge, .hero-line1, .hero-line2, .hero-line3, .hero-accent, .hero-tagline, .hero-actions, .hero-stats, .nav-cta, .floating-icon, .hero-ring { animation: none !important; }
+        }
         .section-header { text-align: center; margin-bottom: 60px; }
         .section-header.left { text-align: left; }
         .section-tag { font-family: var(--font-cond); font-size: 11px; letter-spacing: 4px; color: var(--red); display: block; margin-bottom: 12px; }
