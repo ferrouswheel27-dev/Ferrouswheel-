@@ -266,6 +266,40 @@ function ProductCard({ product, onClick, index }) {
   );
 }
 
+function LaserCutBookmark() {
+  const d = "M37 24 L83 24 L83 166 L60 150 L37 166 Z";
+  return (
+    <div className="laser-showcase reveal">
+      <div className="lc-stage">
+        <svg viewBox="0 0 120 200" className="lc-svg" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="12" width="96" height="176" rx="6" className="lc-sheet" />
+          <path d={d} className="lc-fill" />
+          <circle cx="60" cy="40" r="5" className="lc-hole" />
+          <path id="cutpath" d={d} pathLength="100" className="lc-outline" />
+          <g className="lc-head">
+            <line x1="0" y1="-170" x2="0" y2="0" className="lc-beam" />
+            <g className="lc-sparks">
+              <line x1="0" y1="0" x2="6" y2="-4" />
+              <line x1="0" y1="0" x2="7" y2="2" />
+              <line x1="0" y1="0" x2="3" y2="6" />
+              <line x1="0" y1="0" x2="-4" y2="5" />
+            </g>
+            <circle r="2.4" className="lc-dot" />
+            <animateMotion dur="4s" repeatCount="indefinite" calcMode="linear">
+              <mpath href="#cutpath" />
+            </animateMotion>
+          </g>
+        </svg>
+      </div>
+      <div className="lc-copy">
+        <span className="section-tag">PRECISION CRAFT</span>
+        <h3 className="lc-title">CUT FROM<br /><span className="outline-text">SOLID METAL</span></h3>
+        <p className="lc-sub">Every bookmark starts as a sheet of steel — then the laser traces your design, line by line, until it's yours.</p>
+      </div>
+    </div>
+  );
+}
+
 function Products() {
   const [selected, setSelected] = useState(null);
   return (
@@ -275,6 +309,7 @@ function Products() {
         <h2 className="section-title">PRODUCT<br /><span className="outline-text">CATEGORIES</span></h2>
         <p className="section-sub">Every piece is custom. Every piece is metal. Every piece is yours.</p>
       </div>
+      <LaserCutBookmark />
       <div className="products-grid">
         {products.map((p, i) => <ProductCard key={p.id} product={p} index={i} onClick={() => setSelected(p)} />)}
       </div>
@@ -490,6 +525,30 @@ export default function FerrousWheelWebsite() {
         .outline-text { -webkit-text-stroke: 1px var(--red); color: transparent; }
         .section-sub { color: var(--muted); font-size: 15px; margin-top: 16px; }
         .products { padding: 100px 40px; }
+        .laser-showcase { display: flex; align-items: center; gap: 56px; max-width: 880px; margin: 0 auto 72px; flex-wrap: wrap; justify-content: center; }
+        .lc-stage { width: 170px; height: 285px; flex-shrink: 0; }
+        .lc-svg { width: 100%; height: 100%; overflow: hidden; }
+        .lc-sheet { fill: rgba(255,255,255,0.025); stroke: rgba(255,255,255,0.06); stroke-width: 1; }
+        .lc-outline { fill: none; stroke: var(--orange); stroke-width: 2.6; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; filter: drop-shadow(0 0 3px var(--orange)); animation: lcDraw 4s linear infinite; }
+        .lc-fill { fill: rgba(255,107,53,0.16); stroke: var(--orange); stroke-width: 1; opacity: 0; animation: lcFill 4s linear infinite; }
+        .lc-hole { fill: var(--black); stroke: var(--orange); stroke-width: 1.4; opacity: 0; animation: lcHole 4s linear infinite; }
+        .lc-dot { fill: #fff; filter: drop-shadow(0 0 5px var(--orange)) drop-shadow(0 0 9px var(--red)); }
+        .lc-beam { stroke: rgba(255,160,80,0.45); stroke-width: 1.4; filter: drop-shadow(0 0 4px var(--orange)); }
+        .lc-sparks line { stroke: #FFD27A; stroke-width: 1; stroke-linecap: round; }
+        .lc-sparks { transform-origin: center; animation: lcSpark 0.16s steps(2) infinite; }
+        @keyframes lcDraw { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+        @keyframes lcFill { 0%, 80% { opacity: 0; } 92% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes lcHole { 0%, 45% { opacity: 0; } 60%, 100% { opacity: 1; } }
+        @keyframes lcSpark { 0% { opacity: 0.9; transform: scale(0.6); } 100% { opacity: 0.25; transform: scale(1.15); } }
+        .lc-copy { max-width: 340px; }
+        .lc-title { font-family: var(--font-display); font-size: clamp(40px, 6vw, 60px); line-height: 0.95; color: var(--text); margin: 8px 0 14px; }
+        .lc-sub { color: var(--muted); font-size: 14px; line-height: 1.7; }
+        @media (prefers-reduced-motion: reduce) {
+          .lc-outline { animation: none; stroke-dashoffset: 0; }
+          .lc-fill { animation: none; opacity: 1; }
+          .lc-hole { animation: none; opacity: 1; }
+          .lc-head { display: none; }
+        }
         .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
         .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 0 0 24px; position: relative; overflow: hidden; transition: all 0.3s; cursor: pointer; }
         .product-card:hover { border-color: var(--accent); transform: translateY(-4px); }
