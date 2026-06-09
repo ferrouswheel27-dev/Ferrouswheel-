@@ -326,6 +326,9 @@ function LaserCutShowcase() {
     let destroyed = false;
     let rafId = null;
     let restartTimer = null;
+    let mode = "auto"; // "auto" demo cut, or "manual" follow-the-cursor
+    let leaveTimer = null;
+    const pointer = { x: 0, y: 0, prevX: null, prevY: null, active: false };
 
     function drawMetalPlate() {
       procCtx.clearRect(0, 0, W, H);
@@ -349,20 +352,24 @@ function LaserCutShowcase() {
       procCtx.strokeStyle = "rgba(0,0,0,0.5)"; procCtx.lineWidth = 2; procCtx.strokeRect(30, 30, W - 60, H - 60);
     }
 
+    function carveSeg(x0, y0, x1, y1) {
+      // scorched rim first (wider), then cut the void (narrower) on top
+      procCtx.save();
+      procCtx.strokeStyle = "rgba(28,16,10,0.6)"; procCtx.lineWidth = 8; procCtx.lineCap = "round";
+      procCtx.beginPath(); procCtx.moveTo(x0, y0); procCtx.lineTo(x1, y1); procCtx.stroke();
+      procCtx.restore();
+      procCtx.save();
+      procCtx.globalCompositeOperation = "destination-out"; procCtx.lineWidth = 4; procCtx.lineCap = "round";
+      procCtx.beginPath(); procCtx.moveTo(x0, y0); procCtx.lineTo(x1, y1); procCtx.stroke();
+      procCtx.restore();
+      hotTrail.push({ x: x1, y: y1, heat: 1 });
+    }
+
     function carveStep(i) {
       const pt = cuttingPoints[i];
       if (pt.move) return; // pen-up travel between subpaths
       const prev = cuttingPoints[i - 1];
-      // scorched rim first (wider), then cut the void (narrower) on top
-      procCtx.save();
-      procCtx.strokeStyle = "rgba(28,16,10,0.6)"; procCtx.lineWidth = 8; procCtx.lineCap = "round";
-      procCtx.beginPath(); procCtx.moveTo(prev.x, prev.y); procCtx.lineTo(pt.x, pt.y); procCtx.stroke();
-      procCtx.restore();
-      procCtx.save();
-      procCtx.globalCompositeOperation = "destination-out"; procCtx.lineWidth = 4; procCtx.lineCap = "round";
-      procCtx.beginPath(); procCtx.moveTo(prev.x, prev.y); procCtx.lineTo(pt.x, pt.y); procCtx.stroke();
-      procCtx.restore();
-      hotTrail.push({ x: pt.x, y: pt.y, heat: 1 });
+      carveSeg(prev.x, prev.y, pt.x, pt.y);
     }
 
     function Spark(x, y) {
@@ -489,32 +496,48 @@ function LaserCutShowcase() {
 
     function frame() {
       rafId = requestAnimationFrame(frame);
-      if (isCutting) {
-        for (let step = 0; step < 2; step++) {
-          if (currentIndex >= cuttingPoints.length) { isCutting = false; cutDone = true; break; }
-          carveStep(currentIndex);
-          currentIndex++;
+      let tipX = HX, tipY = 350, cutting = false;
+
+      if (mode === "auto") {
+        if (isCutting) {
+          for (let step = 0; step < 2; step++) {
+            if (currentIndex >= cuttingPoints.length) { isCutting = false; cutDone = true; break; }
+            carveStep(currentIndex);
+            currentIndex++;
+          }
+        }
+        const idx = Math.min(currentIndex, cuttingPoints.length - 1);
+        const pt = cuttingPoints[idx] || { x: HX, y: 350 };
+        tipX = pt.x; tipY = pt.y;
+        cutting = isCutting && !pt.move;
+      } else {
+        // manual: laser follows the cursor and cuts where it moves
+        if (pointer.active) {
+          tipX = pointer.x; tipY = pointer.y; cutting = true;
+          if (pointer.prevX != null) {
+            const d = Math.hypot(tipX - pointer.prevX, tipY - pointer.prevY);
+            if (d > 0.5 && d < 140) carveSeg(pointer.prevX, pointer.prevY, tipX, tipY);
+          }
+          pointer.prevX = tipX; pointer.prevY = tipY;
         }
       }
+
       // cool the molten trail
       for (const h of hotTrail) h.heat *= 0.9;
       hotTrail = hotTrail.filter((h) => h.heat > 0.06);
 
-      const idx = Math.min(currentIndex, cuttingPoints.length - 1);
-      const pt = cuttingPoints[idx] || { x: HX, y: 350 };
-      const cutting = isCutting && !pt.move;
       if (cutting) {
-        for (let i = 0; i < 7; i++) sparks.push(new Spark(pt.x, pt.y));
-        if (Math.random() < 0.4) smoke.push(new Smoke(pt.x, pt.y));
+        for (let i = 0; i < 7; i++) sparks.push(new Spark(tipX, tipY));
+        if (Math.random() < 0.4) smoke.push(new Smoke(tipX, tipY));
       }
 
       sparkCtx.clearRect(0, 0, W, H);
       drawSmoke();
       drawHotTrail();
       drawSparks();
-      if (cutting) drawLaser(pt.x, pt.y);
+      if (cutting) drawLaser(tipX, tipY);
 
-      if (cutDone && sparks.length === 0 && hotTrail.length === 0 && smoke.length === 0) {
+      if (mode === "auto" && cutDone && sparks.length === 0 && hotTrail.length === 0 && smoke.length === 0) {
         stopFrame();
         drawFinishedBookmark();
         sparkCtx.clearRect(0, 0, W, H);
@@ -525,13 +548,40 @@ function LaserCutShowcase() {
     function startCut() {
       stopFrame();
       if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
+      mode = "auto";
       currentIndex = 0;
       cutDone = false;
       sparks = []; smoke = []; hotTrail = [];
+      pointer.prevX = null; pointer.prevY = null;
       sparkCtx.clearRect(0, 0, W, H);
       drawMetalPlate();
       isCutting = true;
       frame();
+    }
+
+    function toCanvas(clientX, clientY) {
+      const r = sparkCanvas.getBoundingClientRect();
+      return { x: ((clientX - r.left) / r.width) * W, y: ((clientY - r.top) / r.height) * H };
+    }
+
+    function onPointerMove(e) {
+      const p = toCanvas(e.clientX, e.clientY);
+      if (mode !== "manual") {
+        mode = "manual";
+        isCutting = false;
+        if (cutDone) { drawMetalPlate(); cutDone = false; } // fresh sheet to draw on
+        if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
+        pointer.prevX = null; pointer.prevY = null;
+      }
+      if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
+      pointer.x = p.x; pointer.y = p.y; pointer.active = true;
+      if (!rafId) frame();
+    }
+
+    function onPointerLeave() {
+      pointer.active = false; pointer.prevX = null; pointer.prevY = null;
+      if (leaveTimer) clearTimeout(leaveTimer);
+      leaveTimer = setTimeout(() => { if (!destroyed && visible) startCut(); }, 1600);
     }
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -555,11 +605,19 @@ function LaserCutShowcase() {
     }, { threshold: 0.25 });
     io.observe(wrap);
 
+    sparkCanvas.addEventListener("pointermove", onPointerMove);
+    sparkCanvas.addEventListener("pointerdown", onPointerMove);
+    sparkCanvas.addEventListener("pointerleave", onPointerLeave);
+
     return () => {
       destroyed = true;
       io.disconnect();
       stopFrame();
       if (restartTimer) clearTimeout(restartTimer);
+      if (leaveTimer) clearTimeout(leaveTimer);
+      sparkCanvas.removeEventListener("pointermove", onPointerMove);
+      sparkCanvas.removeEventListener("pointerdown", onPointerMove);
+      sparkCanvas.removeEventListener("pointerleave", onPointerLeave);
     };
   }, []);
 
@@ -568,11 +626,11 @@ function LaserCutShowcase() {
       <div className="lc-copy">
         <span className="section-tag">PRECISION CRAFT</span>
         <h3 className="lc-title">CUT FROM<br /><span className="outline-text">SOLID METAL</span></h3>
-        <p className="lc-sub">Watch a flat sheet of steel become a finished bookmark — traced, cut, and sparked to life by the laser.</p>
+        <p className="lc-sub">Watch the laser cut a bookmark from solid steel — or <strong>move your cursor over the sheet</strong> to grab the laser and cut it yourself.</p>
       </div>
       <div className="lc-canvas-wrap">
         <canvas ref={procRef} width="600" height="700" className="lc-canvas" />
-        <canvas ref={sparkRef} width="600" height="700" className="lc-canvas" />
+        <canvas ref={sparkRef} width="600" height="700" className="lc-canvas lc-canvas-top" />
       </div>
     </div>
   );
@@ -806,6 +864,7 @@ export default function FerrousWheelWebsite() {
         .laser-showcase { display: flex; align-items: center; gap: 56px; max-width: 900px; margin: 0 auto 72px; flex-wrap: wrap; justify-content: center; }
         .lc-canvas-wrap { position: relative; width: 320px; height: 373px; flex-shrink: 0; background: radial-gradient(circle at 50% 45%, #1a1c1e 0%, #0c0d0e 100%); border: 1px solid var(--border); border-radius: 8px; box-shadow: inset 0 0 50px rgba(0,0,0,0.7), 0 16px 40px rgba(0,0,0,0.5); overflow: hidden; }
         .lc-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .lc-canvas-top { cursor: crosshair; touch-action: none; }
         .lc-copy { max-width: 340px; }
         .lc-title { font-family: var(--font-display); font-size: clamp(40px, 6vw, 60px); line-height: 0.95; color: var(--text); margin: 8px 0 14px; }
         .lc-sub { color: var(--muted); font-size: 14px; line-height: 1.7; }
