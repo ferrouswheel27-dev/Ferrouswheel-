@@ -279,35 +279,46 @@ function LaserCutShowcase() {
     const procCtx = procCanvas.getContext("2d");
     const sparkCtx = sparkCanvas.getContext("2d");
     const W = 600, H = 700;
+    const RAD = Math.PI / 180;
 
-    // Violin shape (kept as provided), scaled to the 600x700 canvas
-    const violinPath = [
-      { x: 300, y: 150 },
-      { x: 290, y: 160 }, { x: 290, y: 175 }, { x: 300, y: 185 },
-      { x: 280, y: 195 }, { x: 280, y: 205 }, { x: 295, y: 205 },
-      { x: 295, y: 235 },
-      { x: 250, y: 280 }, { x: 240, y: 310 }, { x: 250, y: 350 },
-      { x: 275, y: 375 }, { x: 275, y: 405 },
-      { x: 230, y: 440 }, { x: 230, y: 500 }, { x: 270, y: 560 },
-      { x: 300, y: 580 },
-      { x: 330, y: 560 }, { x: 370, y: 500 }, { x: 370, y: 440 },
-      { x: 325, y: 405 }, { x: 325, y: 375 },
-      { x: 350, y: 350 }, { x: 360, y: 310 }, { x: 350, y: 280 },
-      { x: 305, y: 235 },
-      { x: 305, y: 205 }, { x: 320, y: 205 }, { x: 320, y: 195 },
-      { x: 310, y: 185 }, { x: 310, y: 160 }, { x: 300, y: 150 },
-    ];
+    // ---- Build a bookmark outline (rounded top, swallowtail bottom) + hang hole ----
+    const outline = [];
+    const pushLine = (x0, y0, x1, y1) => {
+      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / 3));
+      for (let i = 1; i <= n; i++) outline.push({ x: x0 + (x1 - x0) * (i / n), y: y0 + (y1 - y0) * (i / n) });
+    };
+    const pushArc = (cx, cy, r, a0, a1) => {
+      const n = 12;
+      for (let i = 1; i <= n; i++) { const a = a0 + (a1 - a0) * (i / n); outline.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }); }
+    };
+    const L = 220, R = 380, T = 120, B = 560, CR = 26, NOTCH = 300, NY = 516;
+    outline.push({ x: L + CR, y: T });
+    pushLine(L + CR, T, R - CR, T);              // top edge
+    pushArc(R - CR, T + CR, CR, -90 * RAD, 0);   // top-right corner
+    pushLine(R, T + CR, R, B);                    // right edge
+    pushLine(R, B, NOTCH, NY);                    // swallowtail right
+    pushLine(NOTCH, NY, L, B);                     // swallowtail left
+    pushLine(L, B, L, T + CR);                     // left edge
+    pushArc(L + CR, T + CR, CR, 180 * RAD, 270 * RAD); // top-left corner
+
+    const HX = 300, HY = 170, HR = 14;
+    const hole = [];
+    for (let i = 0; i <= 30; i++) { const a = (i / 30) * 2 * Math.PI; hole.push({ x: HX + HR * Math.cos(a), y: HY + HR * Math.sin(a) }); }
 
     let cuttingPoints = [];
-    for (let i = 0; i < violinPath.length - 1; i++) {
-      const a = violinPath[i], b = violinPath[i + 1];
-      const steps = Math.max(1, Math.hypot(b.x - a.x, b.y - a.y) / 2);
-      for (let j = 0; j <= steps; j++) {
-        cuttingPoints.push({ x: a.x + (b.x - a.x) * (j / steps), y: a.y + (b.y - a.y) * (j / steps) });
-      }
-    }
+    outline.forEach((p, i) => cuttingPoints.push({ x: p.x, y: p.y, move: i === 0 }));
+    hole.forEach((p, i) => cuttingPoints.push({ x: p.x, y: p.y, move: i === 0 }));
+
+    const pathOutline = (ctx) => {
+      ctx.beginPath();
+      ctx.moveTo(outline[0].x, outline[0].y);
+      for (let i = 1; i < outline.length; i++) ctx.lineTo(outline[i].x, outline[i].y);
+      ctx.closePath();
+    };
 
     let sparks = [];
+    let smoke = [];
+    let hotTrail = [];
     let currentIndex = 0;
     let isCutting = false;
     let cutDone = false;
@@ -318,126 +329,196 @@ function LaserCutShowcase() {
 
     function drawMetalPlate() {
       procCtx.clearRect(0, 0, W, H);
-      procCtx.fillStyle = "#6b7173";
-      procCtx.fillRect(40, 40, W - 80, H - 80);
-      procCtx.strokeStyle = "rgba(255,255,255,0.05)";
-      procCtx.lineWidth = 1;
-      for (let i = 45; i < H - 40; i += 3) {
-        procCtx.beginPath();
-        procCtx.moveTo(40, i);
-        procCtx.lineTo(W - 40, i);
-        procCtx.stroke();
-      }
+      const g = procCtx.createLinearGradient(0, 30, 0, H - 30);
+      g.addColorStop(0, "#41464a"); g.addColorStop(0.5, "#2f3437"); g.addColorStop(1, "#23282b");
+      procCtx.fillStyle = g;
+      procCtx.fillRect(30, 30, W - 60, H - 60);
+      procCtx.strokeStyle = "rgba(255,255,255,0.035)"; procCtx.lineWidth = 1;
+      for (let y = 34; y < H - 30; y += 3) { procCtx.beginPath(); procCtx.moveTo(30, y); procCtx.lineTo(W - 30, y); procCtx.stroke(); }
+      procCtx.strokeStyle = "rgba(0,0,0,0.10)";
+      for (let y = 36; y < H - 30; y += 6) { procCtx.beginPath(); procCtx.moveTo(30, y + 0.5); procCtx.lineTo(W - 30, y + 0.5); procCtx.stroke(); }
+      procCtx.save();
+      procCtx.globalCompositeOperation = "lighter";
+      const hg = procCtx.createLinearGradient(30, 30, W - 30, H - 30);
+      hg.addColorStop(0, "rgba(255,255,255,0.06)"); hg.addColorStop(0.4, "rgba(255,255,255,0)");
+      procCtx.fillStyle = hg; procCtx.fillRect(30, 30, W - 60, H - 60);
+      procCtx.restore();
+      const vg = procCtx.createRadialGradient(W / 2, H / 2, 150, W / 2, H / 2, 430);
+      vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.45)");
+      procCtx.fillStyle = vg; procCtx.fillRect(30, 30, W - 60, H - 60);
+      procCtx.strokeStyle = "rgba(0,0,0,0.5)"; procCtx.lineWidth = 2; procCtx.strokeRect(30, 30, W - 60, H - 60);
     }
 
     function carveStep(i) {
       const pt = cuttingPoints[i];
-      const prev = i > 0 ? cuttingPoints[i - 1] : pt;
+      if (pt.move) return; // pen-up travel between subpaths
+      const prev = cuttingPoints[i - 1];
+      // scorched rim first (wider), then cut the void (narrower) on top
       procCtx.save();
-      procCtx.globalCompositeOperation = "destination-out";
-      procCtx.lineWidth = 3;
-      procCtx.lineCap = "round";
-      procCtx.beginPath();
-      procCtx.moveTo(prev.x, prev.y);
-      procCtx.lineTo(pt.x, pt.y);
-      procCtx.stroke();
+      procCtx.strokeStyle = "rgba(28,16,10,0.6)"; procCtx.lineWidth = 8; procCtx.lineCap = "round";
+      procCtx.beginPath(); procCtx.moveTo(prev.x, prev.y); procCtx.lineTo(pt.x, pt.y); procCtx.stroke();
       procCtx.restore();
       procCtx.save();
-      procCtx.globalCompositeOperation = "source-over";
-      procCtx.strokeStyle = "rgba(40,20,10,0.3)";
-      procCtx.lineWidth = 5;
-      procCtx.beginPath();
-      procCtx.moveTo(prev.x, prev.y);
-      procCtx.lineTo(pt.x, pt.y);
-      procCtx.stroke();
+      procCtx.globalCompositeOperation = "destination-out"; procCtx.lineWidth = 4; procCtx.lineCap = "round";
+      procCtx.beginPath(); procCtx.moveTo(prev.x, prev.y); procCtx.lineTo(pt.x, pt.y); procCtx.stroke();
       procCtx.restore();
+      hotTrail.push({ x: pt.x, y: pt.y, heat: 1 });
     }
 
     function Spark(x, y) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 4 + 2;
+      const speed = Math.random() * 5 + 2;
       this.x = x; this.y = y;
       this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed + 1;
+      this.vy = Math.sin(angle) * speed - 1.5; // slight upward burst, gravity pulls down
       this.alpha = 1;
-      this.color = Math.random() > 0.3 ? "#ffaa00" : "#ff3300";
-      this.size = Math.random() * 2 + 1;
+      const c = Math.random();
+      this.color = c > 0.6 ? "#fff7e0" : c > 0.3 ? "#ffd24a" : c > 0.12 ? "#ff8a1e" : "#ff5a00";
+      this.size = Math.random() * 1.6 + 0.8;
     }
 
-    function updateAndDrawSparks(lx, ly) {
-      sparkCtx.clearRect(0, 0, W, H);
-      if (isCutting) {
-        for (let i = 0; i < 5; i++) sparks.push(new Spark(lx, ly));
+    function Smoke(x, y) {
+      this.x = x + (Math.random() - 0.5) * 10; this.y = y;
+      this.vx = (Math.random() - 0.5) * 0.4; this.vy = -(0.4 + Math.random() * 0.6);
+      this.r = 5 + Math.random() * 6; this.alpha = 0.16;
+    }
+
+    function drawSmoke() {
+      for (let i = smoke.length - 1; i >= 0; i--) {
+        const s = smoke[i];
+        s.x += s.vx; s.y += s.vy; s.r += 0.4; s.alpha -= 0.0035;
+        if (s.alpha <= 0) { smoke.splice(i, 1); continue; }
+        sparkCtx.save();
+        const g = sparkCtx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
+        g.addColorStop(0, `rgba(60,60,60,${s.alpha})`); g.addColorStop(1, "rgba(60,60,60,0)");
+        sparkCtx.fillStyle = g; sparkCtx.beginPath(); sparkCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2); sparkCtx.fill();
+        sparkCtx.restore();
       }
+    }
+
+    function drawHotTrail() {
+      sparkCtx.save();
+      sparkCtx.globalCompositeOperation = "lighter";
+      for (const h of hotTrail) {
+        const g = sparkCtx.createRadialGradient(h.x, h.y, 0, h.x, h.y, 9);
+        if (h.heat > 0.7) { g.addColorStop(0, `rgba(255,255,235,${h.heat})`); g.addColorStop(0.4, `rgba(255,205,95,${h.heat * 0.8})`); }
+        else { g.addColorStop(0, `rgba(255,150,40,${h.heat})`); g.addColorStop(0.4, `rgba(255,90,20,${h.heat * 0.7})`); }
+        g.addColorStop(1, "rgba(255,60,0,0)");
+        sparkCtx.fillStyle = g; sparkCtx.beginPath(); sparkCtx.arc(h.x, h.y, 9, 0, Math.PI * 2); sparkCtx.fill();
+      }
+      sparkCtx.restore();
+    }
+
+    function drawSparks() {
+      sparkCtx.save();
+      sparkCtx.globalCompositeOperation = "lighter";
+      sparkCtx.lineCap = "round";
       for (let i = sparks.length - 1; i >= 0; i--) {
         const s = sparks[i];
-        s.x += s.vx; s.y += s.vy; s.alpha -= 0.02;
+        s.vy += 0.2; s.x += s.vx; s.y += s.vy; s.alpha -= 0.018;
         if (s.alpha <= 0) { sparks.splice(i, 1); continue; }
-        sparkCtx.save();
-        sparkCtx.globalAlpha = s.alpha;
-        sparkCtx.fillStyle = s.color;
-        sparkCtx.shadowBlur = 6;
-        sparkCtx.shadowColor = s.color;
+        sparkCtx.globalAlpha = Math.max(0, s.alpha);
+        sparkCtx.strokeStyle = s.color;
+        sparkCtx.shadowBlur = 6; sparkCtx.shadowColor = s.color;
+        sparkCtx.lineWidth = s.size;
         sparkCtx.beginPath();
-        sparkCtx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        sparkCtx.fill();
-        sparkCtx.restore();
+        sparkCtx.moveTo(s.x, s.y);
+        sparkCtx.lineTo(s.x - s.vx * 1.8, s.y - s.vy * 1.8);
+        sparkCtx.stroke();
       }
-      if (isCutting) {
-        sparkCtx.save();
-        const g = sparkCtx.createRadialGradient(lx, ly, 1, lx, ly, 15);
-        g.addColorStop(0, "#ffffff");
-        g.addColorStop(0.2, "#ffcc00");
-        g.addColorStop(0.6, "rgba(255,68,0,0.4)");
-        g.addColorStop(1, "rgba(255,68,0,0)");
-        sparkCtx.fillStyle = g;
-        sparkCtx.beginPath();
-        sparkCtx.arc(lx, ly, 15, 0, Math.PI * 2);
-        sparkCtx.fill();
-        sparkCtx.restore();
-      }
+      sparkCtx.restore();
     }
 
-    function drawFinishedViolin() {
+    function drawLaser(lx, ly) {
+      sparkCtx.save();
+      sparkCtx.globalCompositeOperation = "lighter";
+      // focused beam from above
+      const beam = sparkCtx.createLinearGradient(lx, 30, lx, ly);
+      beam.addColorStop(0, "rgba(255,180,90,0)");
+      beam.addColorStop(0.85, "rgba(255,200,110,0.10)");
+      beam.addColorStop(1, "rgba(255,235,170,0.45)");
+      sparkCtx.fillStyle = beam;
+      sparkCtx.fillRect(lx - 2, 30, 4, ly - 30);
+      // molten focal bloom
+      const bloom = sparkCtx.createRadialGradient(lx, ly, 0, lx, ly, 24);
+      bloom.addColorStop(0, "rgba(255,255,255,0.95)");
+      bloom.addColorStop(0.22, "rgba(255,225,130,0.85)");
+      bloom.addColorStop(0.55, "rgba(255,110,30,0.4)");
+      bloom.addColorStop(1, "rgba(255,60,0,0)");
+      sparkCtx.fillStyle = bloom;
+      sparkCtx.beginPath(); sparkCtx.arc(lx, ly, 24, 0, Math.PI * 2); sparkCtx.fill();
+      sparkCtx.restore();
+      // nozzle head tracking horizontally at the top
+      sparkCtx.save();
+      sparkCtx.fillStyle = "#1c1f22";
+      sparkCtx.strokeStyle = "#3a4044";
+      sparkCtx.lineWidth = 2;
+      sparkCtx.beginPath();
+      sparkCtx.moveTo(lx - 16, 16); sparkCtx.lineTo(lx + 16, 16);
+      sparkCtx.lineTo(lx + 7, 40); sparkCtx.lineTo(lx - 7, 40);
+      sparkCtx.closePath(); sparkCtx.fill(); sparkCtx.stroke();
+      sparkCtx.fillStyle = "rgba(255,210,120,0.9)";
+      sparkCtx.beginPath(); sparkCtx.arc(lx, 42, 2.6, 0, Math.PI * 2); sparkCtx.fill();
+      sparkCtx.restore();
+    }
+
+    function drawFinishedBookmark() {
       procCtx.clearRect(0, 0, W, H);
       procCtx.save();
-      procCtx.beginPath();
-      procCtx.moveTo(violinPath[0].x, violinPath[0].y);
-      for (let i = 1; i < violinPath.length; i++) procCtx.lineTo(violinPath[i].x, violinPath[i].y);
-      procCtx.closePath();
-      const grad = procCtx.createLinearGradient(200, 150, 400, 600);
-      grad.addColorStop(0, "#bdc3c7");
-      grad.addColorStop(0.5, "#ecf0f1");
-      grad.addColorStop(1, "#95a5a6");
-      procCtx.fillStyle = grad;
-      procCtx.shadowColor = "rgba(0,0,0,0.4)";
-      procCtx.shadowBlur = 18;
-      procCtx.shadowOffsetY = 10;
+      procCtx.shadowColor = "rgba(0,0,0,0.5)"; procCtx.shadowBlur = 24; procCtx.shadowOffsetY = 14;
+      pathOutline(procCtx);
+      const g = procCtx.createLinearGradient(L, T, R, B);
+      g.addColorStop(0, "#c2c7c9"); g.addColorStop(0.45, "#eef2f3"); g.addColorStop(0.52, "#dbe1e2"); g.addColorStop(1, "#969d9f");
+      procCtx.fillStyle = g;
       procCtx.fill();
+      procCtx.restore();
+      // inner bevel + specular streak (clipped to the shape)
+      procCtx.save();
+      pathOutline(procCtx); procCtx.clip();
+      procCtx.strokeStyle = "rgba(255,255,255,0.5)"; procCtx.lineWidth = 3; pathOutline(procCtx); procCtx.stroke();
+      procCtx.globalAlpha = 0.16; procCtx.fillStyle = "#ffffff"; procCtx.fillRect(L + 28, T, 16, B - T + 40);
+      procCtx.restore();
+      // punch the hang hole
+      procCtx.save();
+      procCtx.globalCompositeOperation = "destination-out";
+      procCtx.beginPath(); procCtx.arc(HX, HY, HR, 0, Math.PI * 2); procCtx.fill();
       procCtx.restore();
     }
 
-    function stopFrame() {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    }
+    function stopFrame() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
 
     function frame() {
       rafId = requestAnimationFrame(frame);
       if (isCutting) {
-        for (let step = 0; step < 3; step++) {
+        for (let step = 0; step < 2; step++) {
           if (currentIndex >= cuttingPoints.length) { isCutting = false; cutDone = true; break; }
           carveStep(currentIndex);
           currentIndex++;
         }
       }
+      // cool the molten trail
+      for (const h of hotTrail) h.heat *= 0.9;
+      hotTrail = hotTrail.filter((h) => h.heat > 0.06);
+
       const idx = Math.min(currentIndex, cuttingPoints.length - 1);
-      const pt = cuttingPoints[idx] || { x: 300, y: 400 };
-      updateAndDrawSparks(pt.x, pt.y);
-      if (cutDone && sparks.length === 0) {
+      const pt = cuttingPoints[idx] || { x: HX, y: 350 };
+      const cutting = isCutting && !pt.move;
+      if (cutting) {
+        for (let i = 0; i < 7; i++) sparks.push(new Spark(pt.x, pt.y));
+        if (Math.random() < 0.4) smoke.push(new Smoke(pt.x, pt.y));
+      }
+
+      sparkCtx.clearRect(0, 0, W, H);
+      drawSmoke();
+      drawHotTrail();
+      drawSparks();
+      if (cutting) drawLaser(pt.x, pt.y);
+
+      if (cutDone && sparks.length === 0 && hotTrail.length === 0 && smoke.length === 0) {
         stopFrame();
-        drawFinishedViolin();
+        drawFinishedBookmark();
         sparkCtx.clearRect(0, 0, W, H);
-        restartTimer = setTimeout(() => { if (!destroyed && visible) startCut(); }, 2200);
+        restartTimer = setTimeout(() => { if (!destroyed && visible) startCut(); }, 2400);
       }
     }
 
@@ -446,7 +527,7 @@ function LaserCutShowcase() {
       if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
       currentIndex = 0;
       cutDone = false;
-      sparks = [];
+      sparks = []; smoke = []; hotTrail = [];
       sparkCtx.clearRect(0, 0, W, H);
       drawMetalPlate();
       isCutting = true;
@@ -454,7 +535,7 @@ function LaserCutShowcase() {
     }
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      drawFinishedViolin();
+      drawFinishedBookmark();
       return () => {};
     }
 
@@ -487,7 +568,7 @@ function LaserCutShowcase() {
       <div className="lc-copy">
         <span className="section-tag">PRECISION CRAFT</span>
         <h3 className="lc-title">CUT FROM<br /><span className="outline-text">SOLID METAL</span></h3>
-        <p className="lc-sub">Watch a flat sheet of steel become a finished piece — traced, cut, and sparked to life by the laser.</p>
+        <p className="lc-sub">Watch a flat sheet of steel become a finished bookmark — traced, cut, and sparked to life by the laser.</p>
       </div>
       <div className="lc-canvas-wrap">
         <canvas ref={procRef} width="600" height="700" className="lc-canvas" />
@@ -723,7 +804,7 @@ export default function FerrousWheelWebsite() {
         .section-sub { color: var(--muted); font-size: 15px; margin-top: 16px; }
         .products { padding: 100px 40px; }
         .laser-showcase { display: flex; align-items: center; gap: 56px; max-width: 900px; margin: 0 auto 72px; flex-wrap: wrap; justify-content: center; }
-        .lc-canvas-wrap { position: relative; width: 300px; height: 350px; flex-shrink: 0; background: #2b2b2b; border: 1px solid var(--border); border-radius: 8px; box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 16px 40px rgba(0,0,0,0.4); overflow: hidden; }
+        .lc-canvas-wrap { position: relative; width: 320px; height: 373px; flex-shrink: 0; background: radial-gradient(circle at 50% 45%, #1a1c1e 0%, #0c0d0e 100%); border: 1px solid var(--border); border-radius: 8px; box-shadow: inset 0 0 50px rgba(0,0,0,0.7), 0 16px 40px rgba(0,0,0,0.5); overflow: hidden; }
         .lc-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .lc-copy { max-width: 340px; }
         .lc-title { font-family: var(--font-display); font-size: clamp(40px, 6vw, 60px); line-height: 0.95; color: var(--text); margin: 8px 0 14px; }
