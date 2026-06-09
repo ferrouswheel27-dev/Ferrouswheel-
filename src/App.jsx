@@ -56,6 +56,7 @@ const products = [
     image: `${CLD}/Photoroom_20260106_145241_suigyq.jpg`,
     gallery: [
       `${CLD}/Photoroom_20260106_145241_suigyq.jpg`,
+      `${CLD}/Photoroom_20260609_180217_hgtmxn.jpg`,
     ],
   },
   {
@@ -95,6 +96,8 @@ const products = [
     image: `${CLD}/Photoroom_20260107_123614_qnwlfz.png`,
     gallery: [
       `${CLD}/Photoroom_20260107_123614_qnwlfz.png`,
+      `${CLD}/IMG_4185_l5qtnc.jpg`,
+      `${CLD}/Photoroom_20260107_123237_vszgn6.png`,
     ],
   },
   {
