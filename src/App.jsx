@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 const CLD = "https://res.cloudinary.com/dbzmj5nvh/image/upload/w_800,q_auto,f_auto";
 const LOGO = `${CLD}/IMG_3739_rxeqd2.png`;
 const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`;
@@ -121,9 +121,10 @@ const steps = [
   { num: "05", title: "It Ships to You", desc: "Your custom piece, delivered pan India." },
   { num: "06", title: "ENJOYYY 🔥", desc: "It's so good, you'll want to keep it for yourself." },
 ];
-function MetalPattern() {
+const REDUCED = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function MetalPattern({ innerRef }) {
   return (
-    <svg className="metal-pattern" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <svg ref={innerRef} className="metal-pattern" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
           <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(230,57,70,0.08)" strokeWidth="0.5"/>
@@ -132,6 +133,64 @@ function MetalPattern() {
       <rect width="200" height="200" fill="url(#grid)" />
     </svg>
   );
+}
+function Embers({ count = 12 }) {
+  const items = useMemo(
+    () =>
+      Array.from({ length: count }, () => ({
+        left: Math.random() * 100,
+        size: 2 + Math.random() * 3,
+        dur: 7 + Math.random() * 9,
+        delay: Math.random() * 9,
+        drift: (Math.random() - 0.5) * 70,
+      })),
+    [count]
+  );
+  return (
+    <div className="embers" aria-hidden="true">
+      {items.map((e, i) => (
+        <span
+          key={i}
+          className="ember"
+          style={{
+            left: `${e.left}%`,
+            width: `${e.size}px`,
+            height: `${e.size}px`,
+            animationDuration: `${e.dur}s`,
+            animationDelay: `${e.delay}s`,
+            "--drift": `${e.drift}px`,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+function Counter({ to, suffix = "" }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        if (REDUCED()) { el.textContent = `${to}${suffix}`; return; }
+        const t0 = performance.now();
+        const dur = 900;
+        const step = (t) => {
+          const p = Math.min(1, (t - t0) / dur);
+          const eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = `${Math.round(to * eased)}${suffix}`;
+          if (p < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+      },
+      { threshold: 0.6 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [to, suffix]);
+  return <span className="stat-num" ref={ref}>0{suffix}</span>;
 }
 function GalleryModal({ product, onClose }) {
   const [current, setCurrent] = useState(0);
@@ -181,33 +240,70 @@ function GalleryModal({ product, onClose }) {
 }
 function Navbar({ activeSection }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [menuOpen]);
   const scrollTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     setMenuOpen(false);
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 30);
   };
+  const links = ["products", "about", "order", "contact"];
   return (
-    <nav className="navbar">
-      <div className="nav-logo" onClick={() => scrollTo("hero")}>
-        <img src={LOGO} alt="Ferrous Wheel" style={{ height: "40px", width: "auto" }} />
-      </div>
-      <div className={`nav-links ${menuOpen ? "open" : ""}`}>
-        {["products", "about", "order", "contact"].map((s) => (
-          <button key={s} className={`nav-link ${activeSection === s ? "active" : ""}`} onClick={() => scrollTo(s)}>
-            {s.toUpperCase()}
-          </button>
-        ))}
-        <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="nav-cta">ORDER NOW</a>
-      </div>
-      <button className="hamburger" aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen(!menuOpen)}>
-        <span /><span /><span />
-      </button>
-    </nav>
+    <>
+      <nav className="navbar">
+        <div className="nav-logo" onClick={() => scrollTo("hero")}>
+          <img src={LOGO} alt="Ferrous Wheel" style={{ height: "40px", width: "auto" }} />
+        </div>
+        <div className="nav-links">
+          {links.map((s) => (
+            <button key={s} className={`nav-link ${activeSection === s ? "active" : ""}`} onClick={() => scrollTo(s)}>
+              {s.toUpperCase()}
+            </button>
+          ))}
+          <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="nav-cta">ORDER NOW</a>
+        </div>
+        <button className={`hamburger ${menuOpen ? "open" : ""}`} aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen(!menuOpen)}>
+          <span /><span /><span />
+        </button>
+      </nav>
+      {menuOpen && (
+        <div className="mobile-menu">
+          {links.map((s, i) => (
+            <button key={s} className="mobile-link" style={{ "--i": i }} onClick={() => scrollTo(s)}>
+              {s.toUpperCase()}
+            </button>
+          ))}
+          <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="nav-cta mobile-cta" style={{ "--i": links.length }}>ORDER NOW</a>
+        </div>
+      )}
+    </>
   );
 }
 function Hero() {
+  const patternRef = useRef(null);
+  const visualRef = useRef(null);
+  useEffect(() => {
+    if (REDUCED() || !window.matchMedia("(pointer: fine)").matches) return;
+    let raf = null;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = null;
+        const y = window.scrollY;
+        if (y < window.innerHeight * 1.2) {
+          if (patternRef.current) patternRef.current.style.transform = `translateY(${y * 0.18}px)`;
+          if (visualRef.current) visualRef.current.style.transform = `translateY(${y * 0.28}px)`;
+        }
+      });
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); if (raf) cancelAnimationFrame(raf); };
+  }, []);
   return (
     <section id="hero" className="hero">
-      <MetalPattern />
+      <MetalPattern innerRef={patternRef} />
+      <Embers count={12} />
       <div className="hero-content">
         <div className="hero-badge">EST. 2024 · BANGALORE</div>
         <h1 className="hero-title">
@@ -222,14 +318,14 @@ function Hero() {
           <button className="btn-secondary" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}>SEE PRODUCTS ↓</button>
         </div>
         <div className="hero-stats">
-          <div className="stat"><span className="stat-num">8+</span><span className="stat-label">Product Types</span></div>
+          <div className="stat"><Counter to={8} suffix="+" /><span className="stat-label">Product Types</span></div>
           <div className="stat-divider" />
-          <div className="stat"><span className="stat-num">4</span><span className="stat-label">Materials</span></div>
+          <div className="stat"><Counter to={4} /><span className="stat-label">Materials</span></div>
           <div className="stat-divider" />
           <div className="stat"><span className="stat-num">∞</span><span className="stat-label">Customizations</span></div>
         </div>
       </div>
-      <div className="hero-visual">
+      <div className="hero-visual" ref={visualRef}>
         <div className="hero-ring ring1" />
         <div className="hero-ring ring2" />
         <div className="hero-ring ring3" />
@@ -261,340 +357,66 @@ function ProductCard({ product, onClick, index }) {
     </div>
   );
 }
-function LaserCutShowcase() {
-  const procRef = useRef(null);
-  const sparkRef = useRef(null);
-  const wrapRef = useRef(null);
+function SpinShowcase({ onSelect }) {
+  const ringRef = useRef(null);
+  const stageRef = useRef(null);
+  const st = useRef({ rot: 0, vel: 0.07, dragging: false, lastX: 0, moved: 0, raf: null }).current;
   useEffect(() => {
-    const procCanvas = procRef.current;
-    const sparkCanvas = sparkRef.current;
-    const wrap = wrapRef.current;
-    if (!procCanvas || !sparkCanvas || !wrap) return;
-    const procCtx = procCanvas.getContext("2d");
-    const sparkCtx = sparkCanvas.getContext("2d");
-    const W = 600, H = 700;
-    const RAD = Math.PI / 180;
-    // ---- Build a bookmark outline (rounded top, swallowtail bottom) + hang hole ----
-    const outline = [];
-    const pushLine = (x0, y0, x1, y1) => {
-      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / 3));
-      for (let i = 1; i <= n; i++) outline.push({ x: x0 + (x1 - x0) * (i / n), y: y0 + (y1 - y0) * (i / n) });
+    const ring = ringRef.current;
+    const stage = stageRef.current;
+    if (!ring || !stage) return;
+    if (REDUCED()) { ring.style.transform = "rotateY(0deg)"; return; }
+    const IDLE = 0.07;
+    const tick = () => {
+      st.raf = requestAnimationFrame(tick);
+      if (!st.dragging) st.vel += (Math.sign(st.vel || 1) * IDLE - st.vel) * 0.03;
+      st.rot += st.vel;
+      ring.style.transform = `rotateY(${st.rot}deg)`;
     };
-    const pushArc = (cx, cy, r, a0, a1) => {
-      const n = 12;
-      for (let i = 1; i <= n; i++) { const a = a0 + (a1 - a0) * (i / n); outline.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) }); }
+    tick();
+    const down = (e) => { st.dragging = true; st.lastX = e.clientX; st.moved = 0; st.vel = 0; };
+    const move = (e) => {
+      if (!st.dragging) return;
+      const dx = e.clientX - st.lastX;
+      st.lastX = e.clientX;
+      st.moved += Math.abs(dx);
+      st.vel = Math.max(-6, Math.min(6, dx * 0.35));
     };
-    const L = 220, R = 380, T = 120, B = 560, CR = 26, NOTCH = 300, NY = 516;
-    outline.push({ x: L + CR, y: T });
-    pushLine(L + CR, T, R - CR, T);              // top edge
-    pushArc(R - CR, T + CR, CR, -90 * RAD, 0);   // top-right corner
-    pushLine(R, T + CR, R, B);                    // right edge
-    pushLine(R, B, NOTCH, NY);                    // swallowtail right
-    pushLine(NOTCH, NY, L, B);                     // swallowtail left
-    pushLine(L, B, L, T + CR);                     // left edge
-    pushArc(L + CR, T + CR, CR, 180 * RAD, 270 * RAD); // top-left corner
-    const HX = 300, HY = 170, HR = 14;
-    const hole = [];
-    for (let i = 0; i <= 30; i++) { const a = (i / 30) * 2 * Math.PI; hole.push({ x: HX + HR * Math.cos(a), y: HY + HR * Math.sin(a) }); }
-    let cuttingPoints = [];
-    outline.forEach((p, i) => cuttingPoints.push({ x: p.x, y: p.y, move: i === 0 }));
-    hole.forEach((p, i) => cuttingPoints.push({ x: p.x, y: p.y, move: i === 0 }));
-    const pathOutline = (ctx) => {
-      ctx.beginPath();
-      ctx.moveTo(outline[0].x, outline[0].y);
-      for (let i = 1; i < outline.length; i++) ctx.lineTo(outline[i].x, outline[i].y);
-      ctx.closePath();
-    };
-    let sparks = [];
-    let smoke = [];
-    let hotTrail = [];
-    let currentIndex = 0;
-    let isCutting = false;
-    let cutDone = false;
-    let visible = false;
-    let destroyed = false;
-    let rafId = null;
-    let restartTimer = null;
-    let mode = "auto"; // "auto" demo cut, or "manual" follow-the-cursor
-    let leaveTimer = null;
-    const pointer = { x: 0, y: 0, prevX: null, prevY: null, active: false };
-    function drawMetalPlate() {
-      procCtx.clearRect(0, 0, W, H);
-      const g = procCtx.createLinearGradient(0, 30, 0, H - 30);
-      g.addColorStop(0, "#41464a"); g.addColorStop(0.5, "#2f3437"); g.addColorStop(1, "#23282b");
-      procCtx.fillStyle = g;
-      procCtx.fillRect(30, 30, W - 60, H - 60);
-      procCtx.strokeStyle = "rgba(255,255,255,0.035)"; procCtx.lineWidth = 1;
-      for (let y = 34; y < H - 30; y += 3) { procCtx.beginPath(); procCtx.moveTo(30, y); procCtx.lineTo(W - 30, y); procCtx.stroke(); }
-      procCtx.strokeStyle = "rgba(0,0,0,0.10)";
-      for (let y = 36; y < H - 30; y += 6) { procCtx.beginPath(); procCtx.moveTo(30, y + 0.5); procCtx.lineTo(W - 30, y + 0.5); procCtx.stroke(); }
-      procCtx.save();
-      procCtx.globalCompositeOperation = "lighter";
-      const hg = procCtx.createLinearGradient(30, 30, W - 30, H - 30);
-      hg.addColorStop(0, "rgba(255,255,255,0.06)"); hg.addColorStop(0.4, "rgba(255,255,255,0)");
-      procCtx.fillStyle = hg; procCtx.fillRect(30, 30, W - 60, H - 60);
-      procCtx.restore();
-      const vg = procCtx.createRadialGradient(W / 2, H / 2, 150, W / 2, H / 2, 430);
-      vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.45)");
-      procCtx.fillStyle = vg; procCtx.fillRect(30, 30, W - 60, H - 60);
-      procCtx.strokeStyle = "rgba(0,0,0,0.5)"; procCtx.lineWidth = 2; procCtx.strokeRect(30, 30, W - 60, H - 60);
-    }
-    function carveSeg(x0, y0, x1, y1) {
-      // scorched rim first (wider), then cut the void (narrower) on top
-      procCtx.save();
-      procCtx.strokeStyle = "rgba(28,16,10,0.6)"; procCtx.lineWidth = 8; procCtx.lineCap = "round";
-      procCtx.beginPath(); procCtx.moveTo(x0, y0); procCtx.lineTo(x1, y1); procCtx.stroke();
-      procCtx.restore();
-      procCtx.save();
-      procCtx.globalCompositeOperation = "destination-out"; procCtx.lineWidth = 4; procCtx.lineCap = "round";
-      procCtx.beginPath(); procCtx.moveTo(x0, y0); procCtx.lineTo(x1, y1); procCtx.stroke();
-      procCtx.restore();
-      hotTrail.push({ x: x1, y: y1, heat: 1 });
-    }
-    function carveStep(i) {
-      const pt = cuttingPoints[i];
-      if (pt.move) return; // pen-up travel between subpaths
-      const prev = cuttingPoints[i - 1];
-      carveSeg(prev.x, prev.y, pt.x, pt.y);
-    }
-    function Spark(x, y) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 5 + 2;
-      this.x = x; this.y = y;
-      this.vx = Math.cos(angle) * speed;
-      this.vy = Math.sin(angle) * speed - 1.5; // slight upward burst, gravity pulls down
-      this.alpha = 1;
-      const c = Math.random();
-      this.color = c > 0.6 ? "#fff7e0" : c > 0.3 ? "#ffd24a" : c > 0.12 ? "#ff8a1e" : "#ff5a00";
-      this.size = Math.random() * 1.6 + 0.8;
-    }
-    function Smoke(x, y) {
-      this.x = x + (Math.random() - 0.5) * 10; this.y = y;
-      this.vx = (Math.random() - 0.5) * 0.4; this.vy = -(0.4 + Math.random() * 0.6);
-      this.r = 5 + Math.random() * 6; this.alpha = 0.16;
-    }
-    function drawSmoke() {
-      for (let i = smoke.length - 1; i >= 0; i--) {
-        const s = smoke[i];
-        s.x += s.vx; s.y += s.vy; s.r += 0.4; s.alpha -= 0.0035;
-        if (s.alpha <= 0) { smoke.splice(i, 1); continue; }
-        sparkCtx.save();
-        const g = sparkCtx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r);
-        g.addColorStop(0, `rgba(60,60,60,${s.alpha})`); g.addColorStop(1, "rgba(60,60,60,0)");
-        sparkCtx.fillStyle = g; sparkCtx.beginPath(); sparkCtx.arc(s.x, s.y, s.r, 0, Math.PI * 2); sparkCtx.fill();
-        sparkCtx.restore();
-      }
-    }
-    function drawHotTrail() {
-      sparkCtx.save();
-      sparkCtx.globalCompositeOperation = "lighter";
-      for (const h of hotTrail) {
-        const g = sparkCtx.createRadialGradient(h.x, h.y, 0, h.x, h.y, 9);
-        if (h.heat > 0.7) { g.addColorStop(0, `rgba(255,255,235,${h.heat})`); g.addColorStop(0.4, `rgba(255,205,95,${h.heat * 0.8})`); }
-        else { g.addColorStop(0, `rgba(255,150,40,${h.heat})`); g.addColorStop(0.4, `rgba(255,90,20,${h.heat * 0.7})`); }
-        g.addColorStop(1, "rgba(255,60,0,0)");
-        sparkCtx.fillStyle = g; sparkCtx.beginPath(); sparkCtx.arc(h.x, h.y, 9, 0, Math.PI * 2); sparkCtx.fill();
-      }
-      sparkCtx.restore();
-    }
-    function drawSparks() {
-      sparkCtx.save();
-      sparkCtx.globalCompositeOperation = "lighter";
-      sparkCtx.lineCap = "round";
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const s = sparks[i];
-        s.vy += 0.2; s.x += s.vx; s.y += s.vy; s.alpha -= 0.018;
-        if (s.alpha <= 0) { sparks.splice(i, 1); continue; }
-        sparkCtx.globalAlpha = Math.max(0, s.alpha);
-        sparkCtx.strokeStyle = s.color;
-        sparkCtx.shadowBlur = 6; sparkCtx.shadowColor = s.color;
-        sparkCtx.lineWidth = s.size;
-        sparkCtx.beginPath();
-        sparkCtx.moveTo(s.x, s.y);
-        sparkCtx.lineTo(s.x - s.vx * 1.8, s.y - s.vy * 1.8);
-        sparkCtx.stroke();
-      }
-      sparkCtx.restore();
-    }
-    function drawLaser(lx, ly) {
-      sparkCtx.save();
-      sparkCtx.globalCompositeOperation = "lighter";
-      // focused beam from above
-      const beam = sparkCtx.createLinearGradient(lx, 30, lx, ly);
-      beam.addColorStop(0, "rgba(255,180,90,0)");
-      beam.addColorStop(0.85, "rgba(255,200,110,0.10)");
-      beam.addColorStop(1, "rgba(255,235,170,0.45)");
-      sparkCtx.fillStyle = beam;
-      sparkCtx.fillRect(lx - 2, 30, 4, ly - 30);
-      // molten focal bloom
-      const bloom = sparkCtx.createRadialGradient(lx, ly, 0, lx, ly, 24);
-      bloom.addColorStop(0, "rgba(255,255,255,0.95)");
-      bloom.addColorStop(0.22, "rgba(255,225,130,0.85)");
-      bloom.addColorStop(0.55, "rgba(255,110,30,0.4)");
-      bloom.addColorStop(1, "rgba(255,60,0,0)");
-      sparkCtx.fillStyle = bloom;
-      sparkCtx.beginPath(); sparkCtx.arc(lx, ly, 24, 0, Math.PI * 2); sparkCtx.fill();
-      sparkCtx.restore();
-      // nozzle head tracking horizontally at the top
-      sparkCtx.save();
-      sparkCtx.fillStyle = "#1c1f22";
-      sparkCtx.strokeStyle = "#3a4044";
-      sparkCtx.lineWidth = 2;
-      sparkCtx.beginPath();
-      sparkCtx.moveTo(lx - 16, 16); sparkCtx.lineTo(lx + 16, 16);
-      sparkCtx.lineTo(lx + 7, 40); sparkCtx.lineTo(lx - 7, 40);
-      sparkCtx.closePath(); sparkCtx.fill(); sparkCtx.stroke();
-      sparkCtx.fillStyle = "rgba(255,210,120,0.9)";
-      sparkCtx.beginPath(); sparkCtx.arc(lx, 42, 2.6, 0, Math.PI * 2); sparkCtx.fill();
-      sparkCtx.restore();
-    }
-    function drawFinishedBookmark() {
-      procCtx.clearRect(0, 0, W, H);
-      procCtx.save();
-      procCtx.shadowColor = "rgba(0,0,0,0.5)"; procCtx.shadowBlur = 24; procCtx.shadowOffsetY = 14;
-      pathOutline(procCtx);
-      const g = procCtx.createLinearGradient(L, T, R, B);
-      g.addColorStop(0, "#c2c7c9"); g.addColorStop(0.45, "#eef2f3"); g.addColorStop(0.52, "#dbe1e2"); g.addColorStop(1, "#969d9f");
-      procCtx.fillStyle = g;
-      procCtx.fill();
-      procCtx.restore();
-      // inner bevel + specular streak (clipped to the shape)
-      procCtx.save();
-      pathOutline(procCtx); procCtx.clip();
-      procCtx.strokeStyle = "rgba(255,255,255,0.5)"; procCtx.lineWidth = 3; pathOutline(procCtx); procCtx.stroke();
-      procCtx.globalAlpha = 0.16; procCtx.fillStyle = "#ffffff"; procCtx.fillRect(L + 28, T, 16, B - T + 40);
-      procCtx.restore();
-      // punch the hang hole
-      procCtx.save();
-      procCtx.globalCompositeOperation = "destination-out";
-      procCtx.beginPath(); procCtx.arc(HX, HY, HR, 0, Math.PI * 2); procCtx.fill();
-      procCtx.restore();
-    }
-    function stopFrame() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
-    function frame() {
-      rafId = requestAnimationFrame(frame);
-      let tipX = HX, tipY = 350, cutting = false;
-      if (mode === "auto") {
-        if (isCutting) {
-          for (let step = 0; step < 2; step++) {
-            if (currentIndex >= cuttingPoints.length) { isCutting = false; cutDone = true; break; }
-            carveStep(currentIndex);
-            currentIndex++;
-          }
-        }
-        const idx = Math.min(currentIndex, cuttingPoints.length - 1);
-        const pt = cuttingPoints[idx] || { x: HX, y: 350 };
-        tipX = pt.x; tipY = pt.y;
-        cutting = isCutting && !pt.move;
-      } else {
-        // manual: laser follows the cursor and cuts where it moves
-        if (pointer.active) {
-          tipX = pointer.x; tipY = pointer.y; cutting = true;
-          if (pointer.prevX != null) {
-            const d = Math.hypot(tipX - pointer.prevX, tipY - pointer.prevY);
-            if (d > 0.5 && d < 140) carveSeg(pointer.prevX, pointer.prevY, tipX, tipY);
-          }
-          pointer.prevX = tipX; pointer.prevY = tipY;
-        }
-      }
-      // cool the molten trail
-      for (const h of hotTrail) h.heat *= 0.9;
-      hotTrail = hotTrail.filter((h) => h.heat > 0.06);
-      if (cutting) {
-        for (let i = 0; i < 7; i++) sparks.push(new Spark(tipX, tipY));
-        if (Math.random() < 0.4) smoke.push(new Smoke(tipX, tipY));
-      }
-      sparkCtx.clearRect(0, 0, W, H);
-      drawSmoke();
-      drawHotTrail();
-      drawSparks();
-      if (cutting) drawLaser(tipX, tipY);
-      if (mode === "auto" && cutDone && sparks.length === 0 && hotTrail.length === 0 && smoke.length === 0) {
-        stopFrame();
-        drawFinishedBookmark();
-        sparkCtx.clearRect(0, 0, W, H);
-        restartTimer = setTimeout(() => { if (!destroyed && visible) startCut(); }, 2400);
-      }
-    }
-    function startCut() {
-      stopFrame();
-      if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
-      mode = "auto";
-      currentIndex = 0;
-      cutDone = false;
-      sparks = []; smoke = []; hotTrail = [];
-      pointer.prevX = null; pointer.prevY = null;
-      sparkCtx.clearRect(0, 0, W, H);
-      drawMetalPlate();
-      isCutting = true;
-      frame();
-    }
-    function toCanvas(clientX, clientY) {
-      const r = sparkCanvas.getBoundingClientRect();
-      return { x: ((clientX - r.left) / r.width) * W, y: ((clientY - r.top) / r.height) * H };
-    }
-    function onPointerMove(e) {
-      if (e.pointerType && e.pointerType !== "mouse") return; // touch scrolls the page; manual cut is mouse-only
-      const p = toCanvas(e.clientX, e.clientY);
-      if (mode !== "manual") {
-        mode = "manual";
-        isCutting = false;
-        if (cutDone) { drawMetalPlate(); cutDone = false; } // fresh sheet to draw on
-        if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
-        pointer.prevX = null; pointer.prevY = null;
-      }
-      if (leaveTimer) { clearTimeout(leaveTimer); leaveTimer = null; }
-      pointer.x = p.x; pointer.y = p.y; pointer.active = true;
-      if (!rafId) frame();
-    }
-    function onPointerLeave() {
-      pointer.active = false; pointer.prevX = null; pointer.prevY = null;
-      if (leaveTimer) clearTimeout(leaveTimer);
-      leaveTimer = setTimeout(() => { if (!destroyed && visible) startCut(); }, 1600);
-    }
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      drawFinishedBookmark();
-      return () => {};
-    }
-    drawMetalPlate();
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => {
-        visible = e.isIntersecting;
-        if (visible) {
-          startCut();
-        } else {
-          isCutting = false;
-          cutDone = false;
-          stopFrame();
-          if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
-        }
-      });
-    }, { threshold: 0.25 });
-    io.observe(wrap);
-    sparkCanvas.addEventListener("pointermove", onPointerMove);
-    sparkCanvas.addEventListener("pointerdown", onPointerMove);
-    sparkCanvas.addEventListener("pointerleave", onPointerLeave);
+    const up = () => { st.dragging = false; };
+    stage.addEventListener("pointerdown", down);
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
     return () => {
-      destroyed = true;
-      io.disconnect();
-      stopFrame();
-      if (restartTimer) clearTimeout(restartTimer);
-      if (leaveTimer) clearTimeout(leaveTimer);
-      sparkCanvas.removeEventListener("pointermove", onPointerMove);
-      sparkCanvas.removeEventListener("pointerdown", onPointerMove);
-      sparkCanvas.removeEventListener("pointerleave", onPointerLeave);
+      if (st.raf) cancelAnimationFrame(st.raf);
+      stage.removeEventListener("pointerdown", down);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
     };
-  }, []);
+  }, [st]);
+  const n = products.length;
   return (
-    <div className="laser-showcase reveal" ref={wrapRef}>
+    <div className="spin-showcase reveal">
       <div className="lc-copy">
-        <span className="section-tag">PRECISION CRAFT</span>
-        <h3 className="lc-title">CUT FROM<br /><span className="outline-text">SOLID METAL</span></h3>
-        <p className="lc-sub">Watch the laser cut a bookmark from solid steel — or <strong>move your cursor over the sheet</strong> to grab the laser and cut it yourself.</p>
+        <span className="section-tag">WORKSHOP SHOWCASE</span>
+        <h3 className="lc-title">FRESH FROM<br /><span className="outline-text">THE WORKSHOP</span></h3>
+        <p className="lc-sub">Real pieces, cut in Bommasandra. <strong>Drag to spin</strong> the lineup — tap any piece for a closer look.</p>
       </div>
-      <div className="lc-canvas-wrap">
-        <canvas ref={procRef} width="600" height="700" className="lc-canvas" />
-        <canvas ref={sparkRef} width="600" height="700" className="lc-canvas lc-canvas-top" />
+      <div className="spin-stage" ref={stageRef}>
+        <div className="spin-ring" ref={ringRef}>
+          {products.map((p, i) => (
+            <button
+              key={p.id}
+              className="spin-card"
+              style={{ transform: `rotateY(${(360 / n) * i}deg) translateZ(285px)` }}
+              aria-label={`View ${p.name}`}
+              onClick={() => { if (st.moved < 8) onSelect(p); }}
+            >
+              <img src={p.image} alt="" loading="lazy" draggable="false" />
+              <span>{p.name.toUpperCase()}</span>
+            </button>
+          ))}
+        </div>
+        <div className="spin-floor" />
       </div>
     </div>
   );
@@ -608,7 +430,7 @@ function Products() {
         <h2 className="section-title">PRODUCT<br /><span className="outline-text">CATEGORIES</span></h2>
         <p className="section-sub">Every piece is custom. Every piece is metal. Every piece is yours.</p>
       </div>
-      <LaserCutShowcase />
+      <SpinShowcase onSelect={setSelected} />
       <div className="products-grid">
         {products.map((p, i) => <ProductCard key={p.id} product={p} index={i} onClick={() => setSelected(p)} />)}
       </div>
@@ -678,6 +500,7 @@ function Contact() {
   return (
     <section id="contact" className="contact">
       <MetalPattern />
+      <Embers count={8} />
       <div className="contact-content">
         <div className="section-header left reveal">
           <span className="section-tag">GET IN TOUCH</span>
@@ -739,7 +562,7 @@ export default function FerrousWheelWebsite() {
           revealObserver.unobserve(e.target);
         }
       }),
-      { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
     );
     document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
     return () => revealObserver.disconnect();
@@ -762,10 +585,26 @@ export default function FerrousWheelWebsite() {
         .nav-link:hover, .nav-link.active { color: var(--red); }
         .nav-cta { background: var(--red); color: #fff; padding: 8px 20px; font-family: var(--font-cond); font-size: 13px; font-weight: 700; letter-spacing: 2px; text-decoration: none; border-radius: 2px; transition: background 0.2s; }
         .nav-cta:hover { background: #c0303b; }
-        .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; }
-        .hamburger span { width: 24px; height: 2px; background: var(--text); display: block; }
+        .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; z-index: 102; }
+        .hamburger span { width: 24px; height: 2px; background: var(--text); display: block; transition: transform 0.25s, opacity 0.2s; }
+        .hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .hamburger.open span:nth-child(2) { opacity: 0; }
+        .hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+        .mobile-menu { position: fixed; inset: 0; z-index: 101; background: rgba(10,10,10,0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; }
+        .mobile-link { background: none; border: none; color: var(--text); font-family: var(--font-display); font-size: 34px; letter-spacing: 4px; cursor: pointer; opacity: 0; transform: translateY(16px); animation: menuIn 0.35s cubic-bezier(0.22,1.36,0.36,1) forwards; animation-delay: calc(var(--i) * 0.06s); }
+        .mobile-link:active { color: var(--red); }
+        .mobile-cta { font-size: 16px; padding: 14px 34px; opacity: 0; transform: translateY(16px); animation: menuIn 0.35s cubic-bezier(0.22,1.36,0.36,1) forwards; animation-delay: calc(var(--i) * 0.06s); }
+        @keyframes menuIn { to { opacity: 1; transform: translateY(0); } }
         .hero { min-height: 100vh; display: flex; align-items: center; padding: 100px 40px 60px; position: relative; overflow: hidden; background: radial-gradient(ellipse at 20% 50%, rgba(230,57,70,0.08) 0%, transparent 60%); }
-        .metal-pattern { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.5; }
+        .metal-pattern { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.5; will-change: transform; }
+        .embers { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+        .ember { position: absolute; bottom: -10px; border-radius: 50%; background: #ff8a3c; box-shadow: 0 0 6px 2px rgba(255,120,40,0.5); opacity: 0; animation: emberRise linear infinite; }
+        @keyframes emberRise {
+          0% { transform: translate(0, 0); opacity: 0; }
+          8% { opacity: 0.9; }
+          55% { opacity: 0.45; }
+          100% { transform: translate(var(--drift), -102vh); opacity: 0; }
+        }
         .hero-content { flex: 1; max-width: 700px; position: relative; z-index: 2; }
         .hero-badge { font-family: var(--font-cond); font-size: 12px; letter-spacing: 4px; color: var(--red); margin-bottom: 24px; }
         .hero-title { font-family: var(--font-display); line-height: 0.9; margin-bottom: 24px; }
@@ -781,9 +620,9 @@ export default function FerrousWheelWebsite() {
         .hero-stats { display: flex; align-items: center; gap: 32px; }
         .stat { display: flex; flex-direction: column; }
         .stat-num { font-family: var(--font-display); font-size: 36px; color: var(--red); }
-        .stat-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); font-family: var(--font-cond); }
+        .stat-label { font-size: 11px; letter-spacing: 2px; color: var(--muted); font-family: var(--font-cond); white-space: nowrap; }
         .stat-divider { width: 1px; height: 40px; background: var(--border); }
-        .hero-visual { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; height: 400px; }
+        .hero-visual { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; height: 400px; will-change: transform; }
         .hero-ring { position: absolute; border-radius: 50%; border: 1px solid rgba(230,57,70,0.2); }
         .ring1 { width: 300px; height: 300px; animation: spin 20s linear infinite; }
         .ring2 { width: 220px; height: 220px; border-color: rgba(255,107,53,0.15); animation: spin 14s linear infinite reverse; }
@@ -794,7 +633,7 @@ export default function FerrousWheelWebsite() {
         @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes heroIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.5); } 50% { box-shadow: 0 0 0 6px rgba(230,57,70,0); } }
-        .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22,1,0.36,1); transition-delay: var(--reveal-delay, 0s); will-change: opacity, transform; }
+        .reveal { opacity: 0; transform: translateY(34px); transition: opacity 0.45s ease, transform 0.55s cubic-bezier(0.22,1.36,0.36,1); transition-delay: var(--reveal-delay, 0s); will-change: opacity, transform; }
         .reveal.visible { opacity: 1; transform: translateY(0); }
         .hero-badge { animation: heroIn 0.6s ease both; }
         .hero-line1 { animation: heroIn 0.6s ease both 0.1s; }
@@ -807,29 +646,36 @@ export default function FerrousWheelWebsite() {
         .nav-cta { animation: pulseGlow 2.6s ease-in-out infinite; }
         @media (prefers-reduced-motion: reduce) {
           .reveal { opacity: 1; transform: none; transition: none; }
-          .hero-badge, .hero-line1, .hero-line2, .hero-line3, .hero-accent, .hero-tagline, .hero-actions, .hero-stats, .nav-cta, .floating-icon, .hero-ring { animation: none !important; }
+          .hero-badge, .hero-line1, .hero-line2, .hero-line3, .hero-accent, .hero-tagline, .hero-actions, .hero-stats, .nav-cta, .floating-icon, .hero-ring, .mobile-link, .mobile-cta { animation: none !important; opacity: 1; transform: none; }
+          .ember { display: none; }
         }
         .section-header { text-align: center; margin-bottom: 60px; }
         .section-header.left { text-align: left; }
         .section-tag { font-family: var(--font-cond); font-size: 11px; letter-spacing: 4px; color: var(--red); display: block; margin-bottom: 12px; }
+        .section-tag::after { content: ""; display: inline-block; width: 0; height: 2px; background: var(--red); margin-left: 10px; vertical-align: middle; transform: skewX(-30deg); transition: width 0.5s cubic-bezier(0.22,1,0.36,1) 0.25s; }
+        .reveal.visible .section-tag::after, .visible .section-tag::after { width: 46px; }
         .section-title { font-family: var(--font-display); font-size: clamp(48px, 8vw, 90px); line-height: 0.95; color: var(--text); }
         .outline-text { -webkit-text-stroke: 1px var(--red); color: transparent; }
         .section-sub { color: var(--muted); font-size: 15px; margin-top: 16px; }
         .products { padding: 100px 40px; }
-        .laser-showcase { display: flex; align-items: center; gap: 56px; max-width: 900px; margin: 0 auto 72px; flex-wrap: wrap; justify-content: center; }
-        .lc-canvas-wrap { position: relative; width: 320px; height: 373px; flex-shrink: 0; background: radial-gradient(circle at 50% 45%, #1a1c1e 0%, #0c0d0e 100%); border: 1px solid var(--border); border-radius: 8px; box-shadow: inset 0 0 50px rgba(0,0,0,0.7), 0 16px 40px rgba(0,0,0,0.5); overflow: hidden; }
-        .lc-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .lc-canvas-top { cursor: crosshair; touch-action: pan-y; }
+        .spin-showcase { display: flex; align-items: center; gap: 56px; max-width: 1000px; margin: 0 auto 72px; flex-wrap: wrap; justify-content: center; }
+        .spin-stage { width: min(560px, 92vw); height: 360px; perspective: 1100px; position: relative; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+        .spin-stage:active { cursor: grabbing; }
+        .spin-ring { position: absolute; inset: 0; transform-style: preserve-3d; will-change: transform; }
+        .spin-card { position: absolute; top: 50%; left: 50%; width: 150px; height: 150px; margin: -75px 0 0 -75px; border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.16); background: var(--card-bg); box-shadow: 0 14px 30px rgba(0,0,0,0.55); backface-visibility: hidden; cursor: pointer; padding: 0; }
+        .spin-card img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .spin-card span { position: absolute; bottom: 0; left: 0; right: 0; font-family: var(--font-cond); font-size: 10px; letter-spacing: 2px; background: rgba(0,0,0,0.7); padding: 4px 6px; text-align: center; color: #fff; }
+        .spin-floor { position: absolute; left: 50%; bottom: 0; width: 72%; height: 64px; transform: translateX(-50%); background: radial-gradient(ellipse at center, rgba(230,57,70,0.26), transparent 70%); filter: blur(8px); pointer-events: none; }
         .lc-copy { max-width: 340px; }
         .lc-title { font-family: var(--font-display); font-size: clamp(40px, 6vw, 60px); line-height: 0.95; color: var(--text); margin: 8px 0 14px; }
         .lc-sub { color: var(--muted); font-size: 14px; line-height: 1.7; }
-        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; max-width: 1240px; margin: 0 auto; }
         .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 0 0 24px; position: relative; overflow: hidden; transition: all 0.3s; cursor: pointer; }
         .product-card:hover { border-color: var(--accent); transform: translateY(-4px); }
         .product-card:hover .card-image-overlay { opacity: 1; }
         .product-card:hover .card-glow { opacity: 1; }
         .card-image-wrap { position: relative; width: 100%; height: 200px; overflow: hidden; }
-        .card-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+        .card-image { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; transition: transform 0.3s; }
         .product-card:hover .card-image { transform: scale(1.05); }
         .card-image-overlay { position: absolute; inset: 0; background: rgba(230,57,70,0.7); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; font-family: var(--font-cond); font-size: 14px; letter-spacing: 2px; color: #fff; font-weight: 700; }
         .card-glow { position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 100px; height: 100px; background: var(--accent); filter: blur(40px); opacity: 0; transition: opacity 0.3s; pointer-events: none; border-radius: 50%; }
@@ -855,10 +701,10 @@ export default function FerrousWheelWebsite() {
         .modal-thumbs { display: flex; gap: 8px; padding: 12px 24px; overflow-x: auto; }
         .thumb { width: 70px; height: 70px; object-fit: cover; border-radius: 4px; cursor: pointer; opacity: 0.5; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; }
         .thumb.active { opacity: 1; border-color: var(--red); }
-        .modal-footer { padding: 16px 24px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--border); margin-top: 8px; }
+        .modal-footer { padding: 16px 24px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-top: 1px solid var(--border); margin-top: 8px; position: sticky; bottom: 0; background: var(--dark); }
         .modal-materials { font-family: var(--font-cond); font-size: 11px; letter-spacing: 2px; color: var(--muted); }
         .about { padding: 100px 40px; position: relative; background: rgba(255,255,255,0.01); }
-        .about-content { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .about-content { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; max-width: 1240px; margin: 0 auto; }
         .about-para { color: var(--muted); font-size: 15px; line-height: 1.8; margin-bottom: 16px; }
         .about-values { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
         .value-chip { background: rgba(230,57,70,0.1); border: 1px solid rgba(230,57,70,0.3); color: var(--text); padding: 6px 14px; border-radius: 100px; font-size: 12px; font-family: var(--font-cond); letter-spacing: 1px; }
@@ -872,16 +718,16 @@ export default function FerrousWheelWebsite() {
         .testimonial-card p { font-size: 13px; color: var(--muted); line-height: 1.7; font-style: italic; margin-bottom: 10px; }
         .testimonial-author { font-family: var(--font-cond); font-size: 12px; color: var(--red); letter-spacing: 2px; }
         .how-to-order { padding: 100px 40px; }
-        .steps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 60px; }
+        .steps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin: 0 auto 60px; max-width: 1240px; }
         .step-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 24px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.2s; }
         .step-card:hover { border-color: rgba(230,57,70,0.4); }
         .step-num { font-family: var(--font-display); font-size: 40px; color: var(--red); opacity: 0.6; }
         .step-content h4 { font-family: var(--font-cond); font-size: 18px; letter-spacing: 1px; color: var(--text); margin-bottom: 6px; }
         .step-content p { font-size: 13px; color: var(--muted); line-height: 1.6; }
-        .order-cta-box { text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 48px; background: rgba(230,57,70,0.04); }
+        .order-cta-box { text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 48px; background: rgba(230,57,70,0.04); max-width: 1240px; margin: 0 auto; }
         .order-cta-box p { color: var(--muted); font-size: 16px; margin-bottom: 24px; }
-        .contact { padding: 100px 40px; position: relative; background: rgba(255,255,255,0.01); }
-        .contact-content { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .contact { padding: 100px 40px; position: relative; background: rgba(255,255,255,0.01); overflow: hidden; }
+        .contact-content { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; max-width: 1240px; margin: 0 auto; position: relative; z-index: 2; }
         .contact-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .contact-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 24px; display: flex; flex-direction: column; gap: 6px; text-decoration: none; transition: all 0.2s; }
         .contact-card:hover { border-color: var(--red); transform: translateY(-2px); }
@@ -893,19 +739,21 @@ export default function FerrousWheelWebsite() {
         .footer-copy { font-size: 11px; color: rgba(255,255,255,0.2); font-family: var(--font-cond); letter-spacing: 2px; }
         @media (max-width: 900px) {
           .navbar { padding: 12px 24px; }
-          .nav-links { display: none; flex-direction: column; position: fixed; inset: 0; background: var(--black); align-items: center; justify-content: center; gap: 32px; }
-          .nav-links.open { display: flex; }
-          .hamburger { display: flex; z-index: 101; }
+          .nav-links { display: none; }
+          .hamburger { display: flex; }
           .hero { flex-direction: column; padding: 100px 24px 60px; gap: 40px; }
           .hero-visual { width: 100%; }
           .about-content, .contact-content { grid-template-columns: 1fr; gap: 40px; }
           .products, .about, .how-to-order, .contact { padding: 60px 24px; }
           .modal-main-image { height: 260px; }
+          .spin-stage { height: 300px; }
+          .spin-card { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
         }
         @media (max-width: 600px) {
           .contact-cards { grid-template-columns: 1fr; }
           .hero-actions { flex-direction: column; }
           .modal-footer { flex-direction: column; align-items: flex-start; }
+          .ember:nth-child(n+7) { display: none; }
         }
       `}</style>
       <Navbar activeSection={activeSection} />
