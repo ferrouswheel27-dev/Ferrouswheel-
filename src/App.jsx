@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-
 const CLD = "https://res.cloudinary.com/dbzmj5nvh/image/upload/w_800,q_auto,f_auto";
 const LOGO = `${CLD}/IMG_3739_rxeqd2.png`;
-
+const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`;
+const WA_DEFAULT = WA("Hi Ferrous Wheel! I'd like to order a custom metal gift.");
 const products = [
   {
     id: 1,
@@ -113,7 +113,6 @@ const products = [
     ],
   },
 ];
-
 const steps = [
   { num: "01", title: "Pick or Describe", desc: "Tell us what you want — any product, any design, any hobby." },
   { num: "02", title: "WhatsApp / Instagram", desc: "Reach out to us directly. No complicated forms." },
@@ -122,7 +121,6 @@ const steps = [
   { num: "05", title: "It Ships to You", desc: "Your custom piece, delivered pan India." },
   { num: "06", title: "ENJOYYY 🔥", desc: "It's so good, you'll want to keep it for yourself." },
 ];
-
 function MetalPattern() {
   return (
     <svg className="metal-pattern" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -135,44 +133,45 @@ function MetalPattern() {
     </svg>
   );
 }
-
 function GalleryModal({ product, onClose }) {
   const [current, setCurrent] = useState(0);
   const gallery = product.gallery || [product.image];
-
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
   }, [onClose]);
-
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>✕</button>
+      <div className="modal" role="dialog" aria-modal="true" aria-label={`${product.name} gallery`} onClick={e => e.stopPropagation()}>
+        <button className="modal-close" aria-label="Close gallery" onClick={onClose}>✕</button>
         <div className="modal-header">
           <h2 className="modal-title">{product.name}</h2>
           <p className="modal-tagline">"{product.tagline}"</p>
         </div>
         <div className="modal-main-image">
-          <img src={gallery[current]} alt={product.name} />
+          <img src={gallery[current]} alt={`Custom metal ${product.name.toLowerCase()} by Ferrous Wheel, Bangalore`} />
           {gallery.length > 1 && (
             <>
-              <button className="modal-nav prev" onClick={() => setCurrent(c => (c - 1 + gallery.length) % gallery.length)}>‹</button>
-              <button className="modal-nav next" onClick={() => setCurrent(c => (c + 1) % gallery.length)}>›</button>
+              <button className="modal-nav prev" aria-label="Previous image" onClick={() => setCurrent(c => (c - 1 + gallery.length) % gallery.length)}>‹</button>
+              <button className="modal-nav next" aria-label="Next image" onClick={() => setCurrent(c => (c + 1) % gallery.length)}>›</button>
             </>
           )}
         </div>
         {gallery.length > 1 && (
           <div className="modal-thumbs">
             {gallery.map((img, i) => (
-              <img key={i} src={img} alt="" className={`thumb ${i === current ? "active" : ""}`} onClick={() => setCurrent(i)} />
+              <img key={i} src={img} alt="" loading="lazy" className={`thumb ${i === current ? "active" : ""}`} onClick={() => setCurrent(i)} />
             ))}
           </div>
         )}
         <div className="modal-footer">
           <p className="modal-materials">{product.materials}</p>
-          <a href="https://wa.me/918105677799" target="_blank" rel="noreferrer" className="btn-primary">
+          <a href={WA(`Hi Ferrous Wheel! I'd love to customize one of your ${product.name.toLowerCase()}.`)} target="_blank" rel="noreferrer" className="btn-primary">
             💬 CUSTOMIZE THIS
           </a>
         </div>
@@ -180,7 +179,6 @@ function GalleryModal({ product, onClose }) {
     </div>
   );
 }
-
 function Navbar({ activeSection }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const scrollTo = (id) => {
@@ -198,15 +196,14 @@ function Navbar({ activeSection }) {
             {s.toUpperCase()}
           </button>
         ))}
-        <a href="https://wa.me/918105677799" target="_blank" rel="noreferrer" className="nav-cta">ORDER NOW</a>
+        <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="nav-cta">ORDER NOW</a>
       </div>
-      <button className="hamburger" onClick={() => setMenuOpen(!menuOpen)}>
+      <button className="hamburger" aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen(!menuOpen)}>
         <span /><span /><span />
       </button>
     </nav>
   );
 }
-
 function Hero() {
   return (
     <section id="hero" className="hero">
@@ -221,7 +218,7 @@ function Hero() {
         </h1>
         <p className="hero-tagline">"Gifts sooo good you want to keep them for yourself!"</p>
         <div className="hero-actions">
-          <a href="https://wa.me/918105677799" target="_blank" rel="noreferrer" className="btn-primary">ORDER ON WHATSAPP</a>
+          <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="btn-primary">ORDER ON WHATSAPP</a>
           <button className="btn-secondary" onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}>SEE PRODUCTS ↓</button>
         </div>
         <div className="hero-stats">
@@ -245,13 +242,12 @@ function Hero() {
     </section>
   );
 }
-
 function ProductCard({ product, onClick, index }) {
   return (
     <div className="product-card reveal" style={{ "--accent": product.accent, "--reveal-delay": `${index * 0.07}s` }} onClick={onClick}>
       <div className="card-number">0{product.id}</div>
       <div className="card-image-wrap">
-        <img src={product.image} alt={product.name} className="card-image" />
+        <img src={product.image} alt={`Custom metal ${product.name.toLowerCase()} by Ferrous Wheel, Bangalore`} loading="lazy" className="card-image" />
         <div className="card-image-overlay">
           <span>VIEW GALLERY →</span>
         </div>
@@ -265,12 +261,10 @@ function ProductCard({ product, onClick, index }) {
     </div>
   );
 }
-
 function LaserCutShowcase() {
   const procRef = useRef(null);
   const sparkRef = useRef(null);
   const wrapRef = useRef(null);
-
   useEffect(() => {
     const procCanvas = procRef.current;
     const sparkCanvas = sparkRef.current;
@@ -280,7 +274,6 @@ function LaserCutShowcase() {
     const sparkCtx = sparkCanvas.getContext("2d");
     const W = 600, H = 700;
     const RAD = Math.PI / 180;
-
     // ---- Build a bookmark outline (rounded top, swallowtail bottom) + hang hole ----
     const outline = [];
     const pushLine = (x0, y0, x1, y1) => {
@@ -300,22 +293,18 @@ function LaserCutShowcase() {
     pushLine(NOTCH, NY, L, B);                     // swallowtail left
     pushLine(L, B, L, T + CR);                     // left edge
     pushArc(L + CR, T + CR, CR, 180 * RAD, 270 * RAD); // top-left corner
-
     const HX = 300, HY = 170, HR = 14;
     const hole = [];
     for (let i = 0; i <= 30; i++) { const a = (i / 30) * 2 * Math.PI; hole.push({ x: HX + HR * Math.cos(a), y: HY + HR * Math.sin(a) }); }
-
     let cuttingPoints = [];
     outline.forEach((p, i) => cuttingPoints.push({ x: p.x, y: p.y, move: i === 0 }));
     hole.forEach((p, i) => cuttingPoints.push({ x: p.x, y: p.y, move: i === 0 }));
-
     const pathOutline = (ctx) => {
       ctx.beginPath();
       ctx.moveTo(outline[0].x, outline[0].y);
       for (let i = 1; i < outline.length; i++) ctx.lineTo(outline[i].x, outline[i].y);
       ctx.closePath();
     };
-
     let sparks = [];
     let smoke = [];
     let hotTrail = [];
@@ -329,7 +318,6 @@ function LaserCutShowcase() {
     let mode = "auto"; // "auto" demo cut, or "manual" follow-the-cursor
     let leaveTimer = null;
     const pointer = { x: 0, y: 0, prevX: null, prevY: null, active: false };
-
     function drawMetalPlate() {
       procCtx.clearRect(0, 0, W, H);
       const g = procCtx.createLinearGradient(0, 30, 0, H - 30);
@@ -351,7 +339,6 @@ function LaserCutShowcase() {
       procCtx.fillStyle = vg; procCtx.fillRect(30, 30, W - 60, H - 60);
       procCtx.strokeStyle = "rgba(0,0,0,0.5)"; procCtx.lineWidth = 2; procCtx.strokeRect(30, 30, W - 60, H - 60);
     }
-
     function carveSeg(x0, y0, x1, y1) {
       // scorched rim first (wider), then cut the void (narrower) on top
       procCtx.save();
@@ -364,14 +351,12 @@ function LaserCutShowcase() {
       procCtx.restore();
       hotTrail.push({ x: x1, y: y1, heat: 1 });
     }
-
     function carveStep(i) {
       const pt = cuttingPoints[i];
       if (pt.move) return; // pen-up travel between subpaths
       const prev = cuttingPoints[i - 1];
       carveSeg(prev.x, prev.y, pt.x, pt.y);
     }
-
     function Spark(x, y) {
       const angle = Math.random() * Math.PI * 2;
       const speed = Math.random() * 5 + 2;
@@ -383,13 +368,11 @@ function LaserCutShowcase() {
       this.color = c > 0.6 ? "#fff7e0" : c > 0.3 ? "#ffd24a" : c > 0.12 ? "#ff8a1e" : "#ff5a00";
       this.size = Math.random() * 1.6 + 0.8;
     }
-
     function Smoke(x, y) {
       this.x = x + (Math.random() - 0.5) * 10; this.y = y;
       this.vx = (Math.random() - 0.5) * 0.4; this.vy = -(0.4 + Math.random() * 0.6);
       this.r = 5 + Math.random() * 6; this.alpha = 0.16;
     }
-
     function drawSmoke() {
       for (let i = smoke.length - 1; i >= 0; i--) {
         const s = smoke[i];
@@ -402,7 +385,6 @@ function LaserCutShowcase() {
         sparkCtx.restore();
       }
     }
-
     function drawHotTrail() {
       sparkCtx.save();
       sparkCtx.globalCompositeOperation = "lighter";
@@ -415,7 +397,6 @@ function LaserCutShowcase() {
       }
       sparkCtx.restore();
     }
-
     function drawSparks() {
       sparkCtx.save();
       sparkCtx.globalCompositeOperation = "lighter";
@@ -435,7 +416,6 @@ function LaserCutShowcase() {
       }
       sparkCtx.restore();
     }
-
     function drawLaser(lx, ly) {
       sparkCtx.save();
       sparkCtx.globalCompositeOperation = "lighter";
@@ -468,7 +448,6 @@ function LaserCutShowcase() {
       sparkCtx.beginPath(); sparkCtx.arc(lx, 42, 2.6, 0, Math.PI * 2); sparkCtx.fill();
       sparkCtx.restore();
     }
-
     function drawFinishedBookmark() {
       procCtx.clearRect(0, 0, W, H);
       procCtx.save();
@@ -491,13 +470,10 @@ function LaserCutShowcase() {
       procCtx.beginPath(); procCtx.arc(HX, HY, HR, 0, Math.PI * 2); procCtx.fill();
       procCtx.restore();
     }
-
     function stopFrame() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
-
     function frame() {
       rafId = requestAnimationFrame(frame);
       let tipX = HX, tipY = 350, cutting = false;
-
       if (mode === "auto") {
         if (isCutting) {
           for (let step = 0; step < 2; step++) {
@@ -521,22 +497,18 @@ function LaserCutShowcase() {
           pointer.prevX = tipX; pointer.prevY = tipY;
         }
       }
-
       // cool the molten trail
       for (const h of hotTrail) h.heat *= 0.9;
       hotTrail = hotTrail.filter((h) => h.heat > 0.06);
-
       if (cutting) {
         for (let i = 0; i < 7; i++) sparks.push(new Spark(tipX, tipY));
         if (Math.random() < 0.4) smoke.push(new Smoke(tipX, tipY));
       }
-
       sparkCtx.clearRect(0, 0, W, H);
       drawSmoke();
       drawHotTrail();
       drawSparks();
       if (cutting) drawLaser(tipX, tipY);
-
       if (mode === "auto" && cutDone && sparks.length === 0 && hotTrail.length === 0 && smoke.length === 0) {
         stopFrame();
         drawFinishedBookmark();
@@ -544,7 +516,6 @@ function LaserCutShowcase() {
         restartTimer = setTimeout(() => { if (!destroyed && visible) startCut(); }, 2400);
       }
     }
-
     function startCut() {
       stopFrame();
       if (restartTimer) { clearTimeout(restartTimer); restartTimer = null; }
@@ -558,13 +529,12 @@ function LaserCutShowcase() {
       isCutting = true;
       frame();
     }
-
     function toCanvas(clientX, clientY) {
       const r = sparkCanvas.getBoundingClientRect();
       return { x: ((clientX - r.left) / r.width) * W, y: ((clientY - r.top) / r.height) * H };
     }
-
     function onPointerMove(e) {
+      if (e.pointerType && e.pointerType !== "mouse") return; // touch scrolls the page; manual cut is mouse-only
       const p = toCanvas(e.clientX, e.clientY);
       if (mode !== "manual") {
         mode = "manual";
@@ -577,18 +547,15 @@ function LaserCutShowcase() {
       pointer.x = p.x; pointer.y = p.y; pointer.active = true;
       if (!rafId) frame();
     }
-
     function onPointerLeave() {
       pointer.active = false; pointer.prevX = null; pointer.prevY = null;
       if (leaveTimer) clearTimeout(leaveTimer);
       leaveTimer = setTimeout(() => { if (!destroyed && visible) startCut(); }, 1600);
     }
-
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       drawFinishedBookmark();
       return () => {};
     }
-
     drawMetalPlate();
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
@@ -604,11 +571,9 @@ function LaserCutShowcase() {
       });
     }, { threshold: 0.25 });
     io.observe(wrap);
-
     sparkCanvas.addEventListener("pointermove", onPointerMove);
     sparkCanvas.addEventListener("pointerdown", onPointerMove);
     sparkCanvas.addEventListener("pointerleave", onPointerLeave);
-
     return () => {
       destroyed = true;
       io.disconnect();
@@ -620,7 +585,6 @@ function LaserCutShowcase() {
       sparkCanvas.removeEventListener("pointerleave", onPointerLeave);
     };
   }, []);
-
   return (
     <div className="laser-showcase reveal" ref={wrapRef}>
       <div className="lc-copy">
@@ -635,7 +599,6 @@ function LaserCutShowcase() {
     </div>
   );
 }
-
 function Products() {
   const [selected, setSelected] = useState(null);
   return (
@@ -653,7 +616,6 @@ function Products() {
     </section>
   );
 }
-
 function About() {
   return (
     <section id="about" className="about">
@@ -687,7 +649,6 @@ function About() {
     </section>
   );
 }
-
 function HowToOrder() {
   return (
     <section id="order" className="how-to-order">
@@ -708,12 +669,11 @@ function HowToOrder() {
       </div>
       <div className="order-cta-box">
         <p>Ready? It takes 30 seconds to get started.</p>
-        <a href="https://wa.me/918105677799" target="_blank" rel="noreferrer" className="btn-primary large">💬 CHAT ON WHATSAPP</a>
+        <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="btn-primary large">💬 CHAT ON WHATSAPP</a>
       </div>
     </section>
   );
 }
-
 function Contact() {
   return (
     <section id="contact" className="contact">
@@ -724,7 +684,7 @@ function Contact() {
           <h2 className="section-title">LET'S MAKE<br /><span className="outline-text">SOMETHING</span><br />COOL.</h2>
         </div>
         <div className="contact-cards">
-          <a href="https://wa.me/918105677799" target="_blank" rel="noreferrer" className="contact-card reveal" style={{ "--reveal-delay": "0s" }}>
+          <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="contact-card reveal" style={{ "--reveal-delay": "0s" }}>
             <span className="contact-icon">📱</span>
             <span className="contact-label">WHATSAPP</span>
             <span className="contact-value">+91 81056 77799</span>
@@ -749,7 +709,6 @@ function Contact() {
     </section>
   );
 }
-
 function Footer() {
   return (
     <footer className="footer">
@@ -759,10 +718,8 @@ function Footer() {
     </footer>
   );
 }
-
 export default function FerrousWheelWebsite() {
   const [activeSection, setActiveSection] = useState("hero");
-
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) setActiveSection(e.target.id); }),
@@ -774,7 +731,6 @@ export default function FerrousWheelWebsite() {
     });
     return () => observer.disconnect();
   }, []);
-
   useEffect(() => {
     const revealObserver = new IntersectionObserver(
       (entries) => entries.forEach((e) => {
@@ -788,7 +744,6 @@ export default function FerrousWheelWebsite() {
     document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
     return () => revealObserver.disconnect();
   }, []);
-
   return (
     <div className="fw-app">
       <style>{`
@@ -864,7 +819,7 @@ export default function FerrousWheelWebsite() {
         .laser-showcase { display: flex; align-items: center; gap: 56px; max-width: 900px; margin: 0 auto 72px; flex-wrap: wrap; justify-content: center; }
         .lc-canvas-wrap { position: relative; width: 320px; height: 373px; flex-shrink: 0; background: radial-gradient(circle at 50% 45%, #1a1c1e 0%, #0c0d0e 100%); border: 1px solid var(--border); border-radius: 8px; box-shadow: inset 0 0 50px rgba(0,0,0,0.7), 0 16px 40px rgba(0,0,0,0.5); overflow: hidden; }
         .lc-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .lc-canvas-top { cursor: crosshair; touch-action: none; }
+        .lc-canvas-top { cursor: crosshair; touch-action: pan-y; }
         .lc-copy { max-width: 340px; }
         .lc-title { font-family: var(--font-display); font-size: clamp(40px, 6vw, 60px); line-height: 0.95; color: var(--text); margin: 8px 0 14px; }
         .lc-sub { color: var(--muted); font-size: 14px; line-height: 1.7; }
