@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 const CLD = "https://res.cloudinary.com/dbzmj5nvh/image/upload/w_800,q_auto,f_auto";
-const LOGO = `${CLD}/IMG_3739_rxeqd2.png`;
+const LOGO = "/logo.svg";
 const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`;
 const WA_DEFAULT = WA("Hi Ferrous Wheel! I'd like to order a custom metal gift.");
 const products = [
@@ -253,7 +253,7 @@ function Navbar({ activeSection }) {
     <>
       <nav className="navbar">
         <div className="nav-logo" onClick={() => scrollTo("hero")}>
-          <img src={LOGO} alt="Ferrous Wheel" style={{ height: "40px", width: "auto" }} />
+          <img src={LOGO} alt="Ferrous Wheel — custom made gifts" width="166" height="40" style={{ height: "40px", width: "auto", display: "block" }} />
         </div>
         <div className="nav-links">
           {links.map((s) => (
@@ -535,7 +535,7 @@ function Contact() {
 function Footer() {
   return (
     <footer className="footer">
-      <img src={LOGO} alt="Ferrous Wheel" style={{ height: "50px", width: "auto", marginBottom: "12px" }} />
+      <img src={LOGO} alt="Ferrous Wheel — custom made gifts" width="232" height="56" style={{ height: "56px", width: "auto", maxWidth: "80vw", marginBottom: "12px" }} />
       <p className="footer-tagline">"Gifts sooo good you want to keep them for yourself!"</p>
       <p className="footer-copy">© 2026 Ferrous Wheel · Est. 2024 · Bangalore, India</p>
     </footer>
