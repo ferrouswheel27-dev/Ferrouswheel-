@@ -4,7 +4,7 @@ const CLD = "https://res.cloudinary.com/dbzmj5nvh/image/upload/w_800,q_auto,f_au
 const LOGO = "/logo.svg";
 const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`;
 const WA_DEFAULT = WA("Hi Ferrouswheel! I'd like to order a custom metal gift.");
-const WA_BULK = WA("Hi Ferrouswheel! Bulk enquiry —\nSchool / company:\nProduct:\nQuantity:\nNeeded by:");
+const WA_BULK = WA("Hi Ferrouswheel! I have a bulk order enquiry.\nSchool / company:\nProduct:\nQuantity:\nNeeded by:");
 const MAIL_BULK = "mailto:ferrouswheel27@gmail.com?subject=" + encodeURIComponent("Bulk order enquiry");
 const CURRENT_PATH = (typeof window !== "undefined" ? window.location.pathname : "/").replace(/\.html$/, "").replace(/\/+$/, "") || "/";
 const pageFor = (product) => PAGES.categories.find((c) => c.id === product.id);
@@ -20,7 +20,7 @@ const products = [
     id: 1,
     name: "Bookmarks",
     tagline: "A little spark to every story",
-    description: "Playful metal bookmarks with cute hobby-themed shapes. Personalized with your name.",
+    description: "Metal bookmarks shaped around your favourite hobby, with your name on them.",
     materials: "Stainless Steel · Brass · Copper",
     accent: "#E63946",
     image: `${CLD}/Photoroom_20260304_111937_eeelb5.jpg`,
@@ -33,7 +33,7 @@ const products = [
     id: 2,
     name: "Keychains",
     tagline: "No one likes boring keys",
-    description: "Fun custom metal keychains in any shape you love — sports, cars, music, you name it.",
+    description: "Keychains in any shape you like. Your sport, your car, your music, you name it.",
     materials: "Stainless Steel · Brass · Copper",
     accent: "#FF6B35",
     image: `${CLD}/Photoroom_20260304_113441_g30qtp.jpg`,
@@ -48,7 +48,7 @@ const products = [
     id: 3,
     name: "Nameplates",
     tagline: "A subtle way to claim your territory",
-    description: "Custom nameplates featuring your passion — tennis, sneakers, cars — with your name.",
+    description: "Your name, plus the thing you love most. Tennis, sneakers, cars, anything.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#E63946",
     image: `${CLD}/Photoroom_20260106_144610_hkysfs.jpg`,
@@ -62,7 +62,7 @@ const products = [
     id: 4,
     name: "Medal Hangers",
     tagline: "Show off your wins",
-    description: "Custom medal hangers that put your achievements on display — your sport, your style.",
+    description: "Get your medals out of the drawer and onto the wall, with your sport and your name.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#FFD700",
     image: `${CLD}/Photoroom_20260106_145241_suigyq.jpg`,
@@ -75,7 +75,7 @@ const products = [
     id: 5,
     name: "Necklaces",
     tagline: "Made to turn heads & spark laughs",
-    description: "Fun custom metal necklaces that let you wear your personality loud and proud.",
+    description: "Necklaces with a name, a hobby or an inside joke. A gift nobody else will have.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#FF6B35",
     image: `${CLD}/Photoroom_20260106_151606_ijijur.jpg`,
@@ -87,7 +87,7 @@ const products = [
     id: 6,
     name: "Clocks",
     tagline: "Watching time pass can be fun",
-    description: "Custom wall clocks where your favorite sport or hobby replaces the numbers.",
+    description: "Wall clocks where your favourite sport or hobby takes the place of the numbers.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#E63946",
     image: `${CLD}/Photoroom_20260304_124930_nnyeos.jpg`,
@@ -102,7 +102,7 @@ const products = [
     id: 7,
     name: "Models",
     tagline: "Smooth rides & cool looks",
-    description: "Handcrafted metal scale models — bikes, cars, anything with wheels and soul.",
+    description: "Metal models of bikes, cars and anything else with wheels.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#C0C0C0",
     image: `${CLD}/Photoroom_20260107_123614_qnwlfz.png`,
@@ -116,7 +116,7 @@ const products = [
     id: 8,
     name: "Fandom",
     tagline: "For the fans who want it in metal",
-    description: "Custom metal pieces inspired by your favourite movies, shows, games and more.",
+    description: "Wall art for fans of movies, shows, games and sport.",
     materials: "Stainless Steel · Brass · Copper · Mild Steel",
     accent: "#FFD700",
     image: `${CLD}/IMG_4831_gwwcmr.jpg`,
@@ -126,7 +126,7 @@ const products = [
   },
 ];
 const steps = [
-  { num: "01", title: "Pick or Describe", desc: "Tell us what you want — any product, any design, any hobby." },
+  { num: "01", title: "Pick or Describe", desc: "Tell us what you want. Any product, any design, any hobby." },
   { num: "02", title: "WhatsApp / Instagram", desc: "Reach out to us directly. No complicated forms." },
   { num: "03", title: "Approve the Design", desc: "We send you a preview. You say yes (or tweak it)." },
   { num: "04", title: "Pay & Relax", desc: "Make payment and let us handle the rest." },
@@ -548,16 +548,16 @@ function Contact() {
   );
 }
 const BULK_POINTS = [
-  { icon: "🏫", title: "Your crest, in metal", desc: "School crests and company logos cut in full detail — even on small pieces." },
-  { icon: "🔥", title: "Cut in-house", desc: "Every piece is laser-cut in our own Bommasandra workshop. No middlemen." },
-  { icon: "🧾", title: "Easy paperwork", desc: "50% advance to start, or we can invoice against your purchase order." },
-  { icon: "📦", title: "Pan-India delivery", desc: "Packed and shipped to your school, office or event venue." },
+  { icon: "🏫", title: "Your logo, in metal", desc: "We can cut your school crest or company logo in full detail, even on small pieces." },
+  { icon: "🔥", title: "We make it ourselves", desc: "Everything is cut in our own workshop in Bommasandra. Nothing is outsourced." },
+  { icon: "🧾", title: "Simple payment", desc: "Pay 50% to get started, or send us a purchase order and we'll invoice against it." },
+  { icon: "📦", title: "Delivered anywhere in India", desc: "We pack it well and ship it to your school, office or venue." },
 ];
 const BULK_USES = [
-  { id: 4, use: "Sports Day & club medal hangers" },
-  { id: 1, use: "Return gifts, prizes & Teacher's Day" },
-  { id: 2, use: "Team, event & conference keychains" },
-  { id: 3, use: "Staff awards, desk plates & mementos" },
+  { id: 4, use: "For Sports Day, clubs and races" },
+  { id: 1, use: "Return gifts, prizes, Teacher's Day" },
+  { id: 2, use: "For teams, events and conferences" },
+  { id: 3, use: "Staff awards and desk plates" },
 ];
 function BulkSection() {
   return (
@@ -565,7 +565,7 @@ function BulkSection() {
       <div className="section-header reveal">
         <span className="section-tag">SCHOOLS · CLUBS · COMPANIES</span>
         <h2 className="section-title">BULK<br /><span className="outline-text">ORDERS</span></h2>
-        <p className="section-sub">Medal hangers for Sports Day, bookmarks as return gifts, keychains for your team — made with your crest or logo.</p>
+        <p className="section-sub">Medal hangers for Sports Day, bookmarks as return gifts, keychains for your team. All with your logo on them.</p>
       </div>
       <div className="bulk-grid">
         {BULK_POINTS.map((b, i) => (
@@ -576,7 +576,7 @@ function BulkSection() {
         ))}
       </div>
       <div className="order-cta-box">
-        <p>Planning for Sports Day or a corporate event? Book early — around 4 weeks for 200 pieces.</p>
+        <p>Got Sports Day or an event coming up? Message us early. 200 pieces take about 4 weeks.</p>
         <div className="cta-row">
           <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary large">💬 BULK ENQUIRY</a>
           <a href={`/${PAGES.bulk.slug}`} className="btn-secondary large">HOW BULK ORDERS WORK →</a>
@@ -618,7 +618,7 @@ function CategoryPage({ product, page }) {
       {gallery.length > 1 && (
         <section className="cat-section">
           <span className="section-tag">FROM THE WORKSHOP</span>
-          <h2 className="cat-h2">Recent {product.name.toLowerCase()} we've made</h2>
+          <h2 className="cat-h2">Some we've made recently</h2>
           <div className="cat-gallery">
             {gallery.map((img, i) => (
               <button key={img} className="cat-thumb" onClick={() => setOpen(i)} aria-label={`View photo ${i + 1}`}>
@@ -630,14 +630,14 @@ function CategoryPage({ product, page }) {
       )}
       <section className="cat-section">
         <span className="section-tag">POPULAR IDEAS</span>
-        <h2 className="cat-h2">What people ask us to make</h2>
+        <h2 className="cat-h2">Ideas people love</h2>
         <div className="idea-chips">{page.ideas.map((t) => <span key={t} className="value-chip">{t}</span>)}</div>
-        <p className="cat-note">Got something else in mind? If you can describe it, we can probably cut it — send a photo or sketch on WhatsApp.</p>
+        <p className="cat-note">Have something else in mind? Send us a photo or a rough sketch on WhatsApp. If you can describe it, we can probably make it.</p>
       </section>
       <HowToOrder />
       <section className="cat-section">
         <span className="section-tag">MORE FROM THE WORKSHOP</span>
-        <h2 className="cat-h2">Explore other categories</h2>
+        <h2 className="cat-h2">See what else we make</h2>
         <div className="related-grid">
           {others.map((p) => (
             <a key={p.id} href={hrefFor(p)} className="related-card" style={{ "--accent": p.accent }}>
@@ -655,11 +655,11 @@ function CategoryPage({ product, page }) {
 function BulkPage() {
   const page = PAGES.bulk;
   const steps = [
-    { num: "01", title: "Tell us the brief", desc: "Product, quantity, your crest or logo, and the date you need it by." },
-    { num: "02", title: "Design & quote", desc: "We send a design preview and a quote. Tweak until it's right." },
-    { num: "03", title: "Confirm the order", desc: "50% advance to start production, or a purchase order we can invoice against." },
-    { num: "04", title: "Cut in our workshop", desc: "Laser-cut and finished in-house in Bommasandra, Bangalore." },
-    { num: "05", title: "Delivered", desc: "Packed and shipped to your school, office or venue, anywhere in India." },
+    { num: "01", title: "Tell us what you need", desc: "What you want, how many, your logo, and when you need it." },
+    { num: "02", title: "See the design and price", desc: "We send you a design and a quote. We'll change it until you're happy." },
+    { num: "03", title: "Confirm", desc: "Pay 50% upfront, or send us a purchase order." },
+    { num: "04", title: "We make it", desc: "Everything is cut and finished in our workshop in Bangalore." },
+    { num: "05", title: "We deliver", desc: "Packed and sent to your school, office or venue, anywhere in India." },
   ];
   return (
     <main className="cat-page">
@@ -668,11 +668,11 @@ function BulkPage() {
         <div className="cat-hero-copy">
           <Crumbs label="Bulk Orders" inProducts={false} />
           <h1 className="cat-title">{page.h1}</h1>
-          <p className="cat-tagline">"Your crest. Our sparks. Every kid goes home with one."</p>
-          <p className="cat-intro">Ferrouswheel makes custom metal gifts in batches for schools, sports clubs and companies — medal hangers for Sports Day, bookmarks as prizes and return gifts, keychains for teams and events, and mementos for staff awards.</p>
-          <p className="cat-intro">Everything is designed with you, previewed before we cut, and laser-cut in our own workshop in Bommasandra, Bangalore — so your crest or logo comes out sharp, even on small pieces.</p>
+          <p className="cat-tagline">"One for every kid on the team."</p>
+          <p className="cat-intro">We make custom metal gifts in bulk for schools, sports clubs and companies. Medal hangers for Sports Day, bookmarks as prizes or return gifts, keychains for teams and events, and plaques for staff awards.</p>
+          <p className="cat-intro">You see the design before we cut anything. Everything is made in our own workshop in Bommasandra, so your logo comes out sharp, even on small pieces.</p>
           <div className="cta-row">
-            <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary">💬 BULK ENQUIRY ON WHATSAPP</a>
+            <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary">💬 WHATSAPP US</a>
             <a href={MAIL_BULK} className="btn-secondary">✉️ EMAIL US</a>
           </div>
         </div>
@@ -695,7 +695,7 @@ function BulkPage() {
       </section>
       <section className="cat-section">
         <span className="section-tag">WHY FERROUSWHEEL</span>
-        <h2 className="cat-h2">Made by us, start to finish</h2>
+        <h2 className="cat-h2">Why order from us</h2>
         <div className="bulk-grid">
           {BULK_POINTS.map((b) => (
             <div key={b.title} className="step-card">
@@ -707,7 +707,7 @@ function BulkPage() {
       </section>
       <section className="cat-section">
         <span className="section-tag">HOW IT WORKS</span>
-        <h2 className="cat-h2">From brief to delivery</h2>
+        <h2 className="cat-h2">How it works</h2>
         <div className="steps-grid">
           {steps.map((s) => (
             <div key={s.num} className="step-card">
@@ -717,9 +717,9 @@ function BulkPage() {
           ))}
         </div>
         <div className="order-cta-box">
-          <p><strong>Plan ahead:</strong> 200 pieces take around 4 weeks, and we take on a limited number of bulk batches each month. For Sports Day, annual day or Diwali gifting, message us early to lock your slot.</p>
+          <p><strong>Please plan ahead.</strong> 200 pieces take about 4 weeks, and we can only take a few bulk orders each month. If it's for Sports Day, Annual Day or Diwali, message us early so we can save you a slot.</p>
           <div className="cta-row">
-            <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary large">💬 START A BULK ENQUIRY</a>
+            <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary large">💬 MESSAGE US ON WHATSAPP</a>
           </div>
         </div>
       </section>
