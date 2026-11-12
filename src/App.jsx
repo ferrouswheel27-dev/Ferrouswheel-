@@ -1,8 +1,20 @@
 import { useState, useEffect, useMemo, useRef } from "react";
+import PAGES from "./pages.json";
 const CLD = "https://res.cloudinary.com/dbzmj5nvh/image/upload/w_800,q_auto,f_auto";
 const LOGO = "/logo.svg";
 const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`;
-const WA_DEFAULT = WA("Hi Ferrous Wheel! I'd like to order a custom metal gift.");
+const WA_DEFAULT = WA("Hi Ferrouswheel! I'd like to order a custom metal gift.");
+const WA_BULK = WA("Hi Ferrouswheel! Bulk enquiry —\nSchool / company:\nProduct:\nQuantity:\nNeeded by:");
+const MAIL_BULK = "mailto:ferrouswheel27@gmail.com?subject=" + encodeURIComponent("Bulk order enquiry");
+const CURRENT_PATH = (typeof window !== "undefined" ? window.location.pathname : "/").replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+const pageFor = (product) => PAGES.categories.find((c) => c.id === product.id);
+const hrefFor = (product) => `/${pageFor(product).slug}`;
+function setMeta(title, description, path) {
+  document.title = title;
+  const set = (sel, attr, val) => { const el = document.querySelector(sel); if (el) el.setAttribute(attr, val); };
+  set('meta[name="description"]', "content", description);
+  set('link[rel="canonical"]', "href", PAGES.site + (path === "/" ? "/" : path));
+}
 const products = [
   {
     id: 1,
@@ -192,8 +204,8 @@ function Counter({ to, suffix = "" }) {
   }, [to, suffix]);
   return <span className="stat-num" ref={ref}>0{suffix}</span>;
 }
-function GalleryModal({ product, onClose }) {
-  const [current, setCurrent] = useState(0);
+function GalleryModal({ product, onClose, start = 0, showPageLink = true }) {
+  const [current, setCurrent] = useState(start);
   const gallery = product.gallery || [product.image];
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
@@ -213,7 +225,7 @@ function GalleryModal({ product, onClose }) {
           <p className="modal-tagline">"{product.tagline}"</p>
         </div>
         <div className="modal-main-image">
-          <img src={gallery[current]} alt={`Custom metal ${product.name.toLowerCase()} by Ferrous Wheel, Bangalore`} />
+          <img src={gallery[current]} alt={`Custom metal ${product.name.toLowerCase()} by Ferrouswheel, Bangalore`} />
           {gallery.length > 1 && (
             <>
               <button className="modal-nav prev" aria-label="Previous image" onClick={() => setCurrent(c => (c - 1 + gallery.length) % gallery.length)}>‹</button>
@@ -230,7 +242,8 @@ function GalleryModal({ product, onClose }) {
         )}
         <div className="modal-footer">
           <p className="modal-materials">{product.materials}</p>
-          <a href={WA(`Hi Ferrous Wheel! I'd love to customize one of your ${product.name.toLowerCase()}.`)} target="_blank" rel="noreferrer" className="btn-primary">
+          {showPageLink && <a href={hrefFor(product)} className="modal-page-link">SEE ALL {product.name.toUpperCase()} →</a>}
+          <a href={WA(`Hi Ferrouswheel! I'd love to customize one of your ${product.name.toLowerCase()}.`)} target="_blank" rel="noreferrer" className="btn-primary">
             💬 CUSTOMIZE THIS
           </a>
         </div>
@@ -244,21 +257,23 @@ function Navbar({ activeSection }) {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+  const isHome = CURRENT_PATH === "/";
   const scrollTo = (id) => {
     setMenuOpen(false);
+    if (!isHome) { window.location.href = id === "hero" ? "/" : `/#${id}`; return; }
     setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 30);
   };
-  const links = ["products", "about", "order", "contact"];
+  const links = ["products", "about", "order", "bulk", "contact"];
   return (
     <>
       <nav className="navbar">
-        <div className="nav-logo" onClick={() => scrollTo("hero")}>
-          <img src={LOGO} alt="Ferrous Wheel — custom made gifts" width="166" height="40" style={{ height: "40px", width: "auto", display: "block" }} />
-        </div>
+        <a href="/" className="nav-logo" onClick={(e) => { if (isHome) { e.preventDefault(); scrollTo("hero"); } }}>
+          <img src={LOGO} alt="Ferrouswheel — custom made gifts" width="166" height="40" style={{ height: "40px", width: "auto", display: "block" }} />
+        </a>
         <div className="nav-links">
           {links.map((s) => (
             <button key={s} className={`nav-link ${activeSection === s ? "active" : ""}`} onClick={() => scrollTo(s)}>
-              {s.toUpperCase()}
+              {s === "bulk" ? "BULK ORDERS" : s.toUpperCase()}
             </button>
           ))}
           <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="nav-cta">ORDER NOW</a>
@@ -271,7 +286,7 @@ function Navbar({ activeSection }) {
         <div className="mobile-menu">
           {links.map((s, i) => (
             <button key={s} className="mobile-link" style={{ "--i": i }} onClick={() => scrollTo(s)}>
-              {s.toUpperCase()}
+              {s === "bulk" ? "BULK ORDERS" : s.toUpperCase()}
             </button>
           ))}
           <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="nav-cta mobile-cta" style={{ "--i": links.length }}>ORDER NOW</a>
@@ -343,7 +358,7 @@ function ProductCard({ product, onClick, index }) {
     <div className="product-card reveal" style={{ "--accent": product.accent, "--reveal-delay": `${index * 0.07}s` }} onClick={onClick}>
       <div className="card-number">0{product.id}</div>
       <div className="card-image-wrap">
-        <img src={product.image} alt={`Custom metal ${product.name.toLowerCase()} by Ferrous Wheel, Bangalore`} loading="lazy" className="card-image" />
+        <img src={product.image} alt={`Custom metal ${product.name.toLowerCase()} by Ferrouswheel, Bangalore`} loading="lazy" className="card-image" />
         <div className="card-image-overlay">
           <span>VIEW GALLERY →</span>
         </div>
@@ -352,7 +367,7 @@ function ProductCard({ product, onClick, index }) {
       <p className="card-tagline">"{product.tagline}"</p>
       <p className="card-desc">{product.description}</p>
       <div className="card-materials">{product.materials}</div>
-      <div className="card-cta">CUSTOMIZE THIS →</div>
+      <a className="card-cta" href={hrefFor(product)} onClick={(e) => e.stopPropagation()}>EXPLORE {product.name.toUpperCase()} →</a>
       <div className="card-glow" />
     </div>
   );
@@ -447,7 +462,7 @@ function About() {
           <span className="section-tag">THE STORY</span>
           <h2 className="section-title">BUILT IN A<br /><span className="outline-text">WORKSHOP,</span><br />BORN FROM A DREAM.</h2>
           <p className="about-para">Meet Yousuf — in January 2025, he stood on top of a go-kart he built himself. That same day, he started dreaming about his next creation: a business.</p>
-          <p className="about-para">Ferrous Wheel was born in Bommasandra, Bangalore — a workshop where sparks fly and ideas take shape in metal. Run by Yousuf and his sister, every piece is designed with love, cut with precision, and shipped with pride.</p>
+          <p className="about-para">Ferrouswheel was born in Bommasandra, Bangalore — a workshop where sparks fly and ideas take shape in metal. Run by Yousuf and his sister, every piece is designed with love, cut with precision, and shipped with pride.</p>
           <div className="about-values">
             <div className="value-chip">⚡ Craft-forward</div>
             <div className="value-chip">🎯 100% Custom</div>
@@ -532,28 +547,226 @@ function Contact() {
     </section>
   );
 }
+const BULK_POINTS = [
+  { icon: "🏫", title: "Your crest, in metal", desc: "School crests and company logos cut in full detail — even on small pieces." },
+  { icon: "🔥", title: "Cut in-house", desc: "Every piece is laser-cut in our own Bommasandra workshop. No middlemen." },
+  { icon: "🧾", title: "Easy paperwork", desc: "50% advance to start, or we can invoice against your purchase order." },
+  { icon: "📦", title: "Pan-India delivery", desc: "Packed and shipped to your school, office or event venue." },
+];
+const BULK_USES = [
+  { id: 4, use: "Sports Day & club medal hangers" },
+  { id: 1, use: "Return gifts, prizes & Teacher's Day" },
+  { id: 2, use: "Team, event & conference keychains" },
+  { id: 3, use: "Staff awards, desk plates & mementos" },
+];
+function BulkSection() {
+  return (
+    <section id="bulk" className="bulk">
+      <div className="section-header reveal">
+        <span className="section-tag">SCHOOLS · CLUBS · COMPANIES</span>
+        <h2 className="section-title">BULK<br /><span className="outline-text">ORDERS</span></h2>
+        <p className="section-sub">Medal hangers for Sports Day, bookmarks as return gifts, keychains for your team — made with your crest or logo.</p>
+      </div>
+      <div className="bulk-grid">
+        {BULK_POINTS.map((b, i) => (
+          <div key={b.title} className="step-card reveal" style={{ "--reveal-delay": `${i * 0.07}s` }}>
+            <div className="bulk-icon">{b.icon}</div>
+            <div className="step-content"><h4>{b.title}</h4><p>{b.desc}</p></div>
+          </div>
+        ))}
+      </div>
+      <div className="order-cta-box">
+        <p>Planning for Sports Day or a corporate event? Book early — around 4 weeks for 200 pieces.</p>
+        <div className="cta-row">
+          <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary large">💬 BULK ENQUIRY</a>
+          <a href={`/${PAGES.bulk.slug}`} className="btn-secondary large">HOW BULK ORDERS WORK →</a>
+        </div>
+      </div>
+    </section>
+  );
+}
+function Crumbs({ label, inProducts = true }) {
+  return (
+    <nav className="crumbs" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>{inProducts && <><a href="/#products">Products</a><span>/</span></>}<span aria-current="page">{label}</span>
+    </nav>
+  );
+}
+function CategoryPage({ product, page }) {
+  const [open, setOpen] = useState(null);
+  const gallery = product.gallery || [product.image];
+  const others = products.filter((p) => p.id !== product.id);
+  return (
+    <main className="cat-page" style={{ "--accent": product.accent }}>
+      <section className="cat-hero">
+        <MetalPattern />
+        <div className="cat-hero-copy">
+          <Crumbs label={product.name} />
+          <h1 className="cat-title">{page.h1}</h1>
+          <p className="cat-tagline">"{product.tagline}"</p>
+          {page.intro.map((t, i) => <p key={i} className="cat-intro">{t}</p>)}
+          <p className="cat-materials">{product.materials}</p>
+          <div className="cta-row">
+            <a href={WA(`Hi Ferrouswheel! I'd love to customize ${page.h1.toLowerCase()}.`)} target="_blank" rel="noreferrer" className="btn-primary">💬 CUSTOMIZE ON WHATSAPP</a>
+            <a href={`/${PAGES.bulk.slug}`} className="btn-secondary">BULK ORDER →</a>
+          </div>
+        </div>
+        <button className="cat-hero-img" onClick={() => setOpen(0)} aria-label={`Open ${product.name} gallery`}>
+          <img src={product.image} alt={`${page.h1} by Ferrouswheel, Bangalore`} />
+        </button>
+      </section>
+      {gallery.length > 1 && (
+        <section className="cat-section">
+          <span className="section-tag">FROM THE WORKSHOP</span>
+          <h2 className="cat-h2">Recent {product.name.toLowerCase()} we've made</h2>
+          <div className="cat-gallery">
+            {gallery.map((img, i) => (
+              <button key={img} className="cat-thumb" onClick={() => setOpen(i)} aria-label={`View photo ${i + 1}`}>
+                <img src={img} alt={`${page.h1} — piece ${i + 1} by Ferrouswheel`} loading="lazy" />
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+      <section className="cat-section">
+        <span className="section-tag">POPULAR IDEAS</span>
+        <h2 className="cat-h2">What people ask us to make</h2>
+        <div className="idea-chips">{page.ideas.map((t) => <span key={t} className="value-chip">{t}</span>)}</div>
+        <p className="cat-note">Got something else in mind? If you can describe it, we can probably cut it — send a photo or sketch on WhatsApp.</p>
+      </section>
+      <HowToOrder />
+      <section className="cat-section">
+        <span className="section-tag">MORE FROM THE WORKSHOP</span>
+        <h2 className="cat-h2">Explore other categories</h2>
+        <div className="related-grid">
+          {others.map((p) => (
+            <a key={p.id} href={hrefFor(p)} className="related-card" style={{ "--accent": p.accent }}>
+              <img src={p.image} alt="" loading="lazy" />
+              <span>{pageFor(p).h1}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+      <Contact />
+      {open !== null && <GalleryModal product={product} start={open} showPageLink={false} onClose={() => setOpen(null)} />}
+    </main>
+  );
+}
+function BulkPage() {
+  const page = PAGES.bulk;
+  const steps = [
+    { num: "01", title: "Tell us the brief", desc: "Product, quantity, your crest or logo, and the date you need it by." },
+    { num: "02", title: "Design & quote", desc: "We send a design preview and a quote. Tweak until it's right." },
+    { num: "03", title: "Confirm the order", desc: "50% advance to start production, or a purchase order we can invoice against." },
+    { num: "04", title: "Cut in our workshop", desc: "Laser-cut and finished in-house in Bommasandra, Bangalore." },
+    { num: "05", title: "Delivered", desc: "Packed and shipped to your school, office or venue, anywhere in India." },
+  ];
+  return (
+    <main className="cat-page">
+      <section className="cat-hero bulk-hero">
+        <MetalPattern />
+        <div className="cat-hero-copy">
+          <Crumbs label="Bulk Orders" inProducts={false} />
+          <h1 className="cat-title">{page.h1}</h1>
+          <p className="cat-tagline">"Your crest. Our sparks. Every kid goes home with one."</p>
+          <p className="cat-intro">Ferrouswheel makes custom metal gifts in batches for schools, sports clubs and companies — medal hangers for Sports Day, bookmarks as prizes and return gifts, keychains for teams and events, and mementos for staff awards.</p>
+          <p className="cat-intro">Everything is designed with you, previewed before we cut, and laser-cut in our own workshop in Bommasandra, Bangalore — so your crest or logo comes out sharp, even on small pieces.</p>
+          <div className="cta-row">
+            <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary">💬 BULK ENQUIRY ON WHATSAPP</a>
+            <a href={MAIL_BULK} className="btn-secondary">✉️ EMAIL US</a>
+          </div>
+        </div>
+      </section>
+      <section className="cat-section">
+        <span className="section-tag">WHAT SCHOOLS & COMPANIES ORDER</span>
+        <h2 className="cat-h2">Popular for bulk</h2>
+        <div className="related-grid">
+          {BULK_USES.map(({ id, use }) => {
+            const p = products.find((x) => x.id === id);
+            return (
+              <a key={id} href={hrefFor(p)} className="related-card" style={{ "--accent": p.accent }}>
+                <img src={p.image} alt="" loading="lazy" />
+                <span>{pageFor(p).h1}</span>
+                <small>{use}</small>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+      <section className="cat-section">
+        <span className="section-tag">WHY FERROUSWHEEL</span>
+        <h2 className="cat-h2">Made by us, start to finish</h2>
+        <div className="bulk-grid">
+          {BULK_POINTS.map((b) => (
+            <div key={b.title} className="step-card">
+              <div className="bulk-icon">{b.icon}</div>
+              <div className="step-content"><h4>{b.title}</h4><p>{b.desc}</p></div>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="cat-section">
+        <span className="section-tag">HOW IT WORKS</span>
+        <h2 className="cat-h2">From brief to delivery</h2>
+        <div className="steps-grid">
+          {steps.map((s) => (
+            <div key={s.num} className="step-card">
+              <div className="step-num">{s.num}</div>
+              <div className="step-content"><h4>{s.title}</h4><p>{s.desc}</p></div>
+            </div>
+          ))}
+        </div>
+        <div className="order-cta-box">
+          <p><strong>Plan ahead:</strong> 200 pieces take around 4 weeks, and we take on a limited number of bulk batches each month. For Sports Day, annual day or Diwali gifting, message us early to lock your slot.</p>
+          <div className="cta-row">
+            <a href={WA_BULK} target="_blank" rel="noreferrer" className="btn-primary large">💬 START A BULK ENQUIRY</a>
+          </div>
+        </div>
+      </section>
+      <Contact />
+    </main>
+  );
+}
 function Footer() {
   return (
     <footer className="footer">
-      <img src={LOGO} alt="Ferrous Wheel — custom made gifts" width="232" height="56" style={{ height: "56px", width: "auto", maxWidth: "80vw", marginBottom: "12px" }} />
+      <img src={LOGO} alt="Ferrouswheel — custom made gifts" width="232" height="56" style={{ height: "56px", width: "auto", maxWidth: "80vw", marginBottom: "12px" }} />
       <p className="footer-tagline">"Gifts sooo good you want to keep them for yourself!"</p>
-      <p className="footer-copy">© 2026 Ferrous Wheel · Est. 2024 · Bangalore, India</p>
+      <nav className="footer-links" aria-label="Product categories">
+        {products.map((p) => <a key={p.id} href={hrefFor(p)}>{pageFor(p).h1}</a>)}
+        <a href={`/${PAGES.bulk.slug}`}>Bulk Orders</a>
+      </nav>
+      <p className="footer-copy">© 2026 Ferrouswheel · Est. 2024 · Bangalore, India</p>
     </footer>
   );
 }
-export default function FerrousWheelWebsite() {
+export default function FerrouswheelWebsite() {
   const [activeSection, setActiveSection] = useState("hero");
+  const category = PAGES.categories.find((c) => `/${c.slug}` === CURRENT_PATH);
+  const product = category && products.find((p) => p.id === category.id);
+  const isBulk = CURRENT_PATH === `/${PAGES.bulk.slug}`;
+  const isHome = !product && !isBulk;
   useEffect(() => {
+    if (product) setMeta(category.title, category.description, CURRENT_PATH);
+    else if (isBulk) setMeta(PAGES.bulk.title, PAGES.bulk.description, CURRENT_PATH);
+    else {
+      setMeta(PAGES.home.title, PAGES.home.description, "/");
+      const id = window.location.hash.slice(1);
+      if (id) setTimeout(() => document.getElementById(id)?.scrollIntoView(), 120);
+    }
+  }, []);
+  useEffect(() => {
+    if (!isHome) return;
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) setActiveSection(e.target.id); }),
       { threshold: 0.4 }
     );
-    ["hero", "products", "about", "order", "contact"].forEach((id) => {
+    ["hero", "products", "about", "order", "bulk", "contact"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
     return () => observer.disconnect();
-  }, []);
+  }, [isHome]);
   useEffect(() => {
     const revealObserver = new IntersectionObserver(
       (entries) => entries.forEach((e) => {
@@ -737,6 +950,53 @@ export default function FerrousWheelWebsite() {
         .footer { padding: 40px; border-top: 1px solid var(--border); text-align: center; display: flex; flex-direction: column; align-items: center; }
         .footer-tagline { font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 8px; }
         .footer-copy { font-size: 11px; color: rgba(255,255,255,0.2); font-family: var(--font-cond); letter-spacing: 2px; }
+        .nav-logo { display: block; }
+        .card-cta { display: inline-block; text-decoration: none; }
+        .card-cta:hover { text-decoration: underline; }
+        .modal-page-link { font-family: var(--font-cond); font-size: 12px; letter-spacing: 2px; color: var(--text); text-decoration: none; border-bottom: 1px solid var(--red); padding-bottom: 2px; }
+        .modal-page-link:hover { color: var(--red); }
+        a.btn-secondary { text-decoration: none; display: inline-block; }
+        .btn-secondary.large { padding: 18px 32px; font-size: 15px; }
+        .cta-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+        .order-cta-box .cta-row { justify-content: center; }
+        .bulk { padding: 100px 40px; }
+        .bulk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; max-width: 1240px; margin: 0 auto 40px; }
+        .bulk-icon { font-size: 30px; }
+        .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; max-width: 760px; margin: 18px 0 20px; }
+        .footer-links a { color: var(--muted); font-size: 13px; text-decoration: none; }
+        .footer-links a:hover { color: var(--red); }
+        .cat-page { padding-top: 66px; }
+        .cat-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 56px; align-items: center; padding: 64px 40px 72px; max-width: 1320px; margin: 0 auto; }
+        .bulk-hero { grid-template-columns: 1fr; max-width: 900px; }
+        .cat-hero-copy { position: relative; z-index: 2; }
+        .crumbs { display: flex; flex-wrap: wrap; gap: 8px; font-family: var(--font-cond); font-size: 12px; letter-spacing: 2px; color: var(--muted); margin-bottom: 22px; text-transform: uppercase; }
+        .crumbs a { color: var(--muted); text-decoration: none; }
+        .crumbs a:hover { color: var(--red); }
+        .crumbs [aria-current] { color: var(--red); }
+        .cat-title { font-family: var(--font-display); font-size: clamp(54px, 8vw, 104px); line-height: 0.92; color: var(--text); }
+        .cat-tagline { color: var(--accent, var(--red)); font-style: italic; font-size: 16px; margin: 14px 0 22px; }
+        .cat-intro { color: #bdbdbd; font-size: 16px; line-height: 1.75; margin-bottom: 14px; max-width: 620px; }
+        .cat-materials { font-family: var(--font-cond); font-size: 12px; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin: 18px 0 26px; }
+        .cat-hero-img { position: relative; z-index: 2; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; aspect-ratio: 4 / 5; background: var(--card-bg); padding: 0; cursor: zoom-in; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
+        .cat-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
+        .cat-hero-img:hover img { transform: scale(1.04); }
+        .cat-section { padding: 56px 40px; max-width: 1240px; margin: 0 auto; }
+        .cat-h2 { font-family: var(--font-display); font-size: clamp(34px, 5vw, 52px); line-height: 1; color: var(--text); margin-bottom: 26px; }
+        .cat-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+        .cat-thumb { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; padding: 0; background: var(--card-bg); cursor: zoom-in; }
+        .cat-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+        .cat-thumb:hover img { transform: scale(1.06); }
+        .idea-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+        .idea-chips .value-chip { font-size: 14px; padding: 8px 16px; }
+        .cat-note { color: var(--muted); font-size: 14px; }
+        .cat-page .how-to-order { padding: 56px 40px; }
+        .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+        .related-card { display: flex; flex-direction: column; background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
+        .related-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .related-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+        .related-card span { font-family: var(--font-display); font-size: 22px; color: var(--text); padding: 12px 14px 4px; }
+        .related-card small { color: var(--muted); font-size: 12px; padding: 0 14px 14px; line-height: 1.5; }
+        .related-card span:last-child { padding-bottom: 14px; }
         @media (max-width: 900px) {
           .navbar { padding: 12px 24px; }
           .nav-links { display: none; }
@@ -744,7 +1004,9 @@ export default function FerrousWheelWebsite() {
           .hero { flex-direction: column; padding: 100px 24px 60px; gap: 40px; }
           .hero-visual { width: 100%; }
           .about-content, .contact-content { grid-template-columns: 1fr; gap: 40px; }
-          .products, .about, .how-to-order, .contact { padding: 60px 24px; }
+          .products, .about, .how-to-order, .contact, .bulk { padding: 60px 24px; }
+          .cat-hero { grid-template-columns: 1fr; padding: 36px 24px 48px; gap: 32px; }
+          .cat-section, .cat-page .how-to-order { padding: 40px 24px; }
           .modal-main-image { height: 260px; }
           .spin-stage { height: 300px; }
           .spin-card { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
@@ -752,16 +1014,28 @@ export default function FerrousWheelWebsite() {
         @media (max-width: 600px) {
           .contact-cards { grid-template-columns: 1fr; }
           .hero-actions { flex-direction: column; }
+          .cta-row { flex-direction: column; align-items: stretch; text-align: center; }
+          .related-grid { grid-template-columns: 1fr 1fr; }
+          .cat-gallery { grid-template-columns: 1fr 1fr; }
           .modal-footer { flex-direction: column; align-items: flex-start; }
           .ember:nth-child(n+7) { display: none; }
         }
       `}</style>
-      <Navbar activeSection={activeSection} />
-      <Hero />
-      <Products />
-      <About />
-      <HowToOrder />
-      <Contact />
+      <Navbar activeSection={isHome ? activeSection : ""} />
+      {product ? (
+        <CategoryPage product={product} page={category} />
+      ) : isBulk ? (
+        <BulkPage />
+      ) : (
+        <>
+          <Hero />
+          <Products />
+          <About />
+          <HowToOrder />
+          <BulkSection />
+          <Contact />
+        </>
+      )}
       <Footer />
     </div>
   );

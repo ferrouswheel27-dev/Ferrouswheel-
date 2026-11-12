@@ -1,0 +1,111 @@
+{
+  "site": "https://ferrouswheel.in",
+  "home": {
+    "title": "Ferrouswheel | Custom Metal Gifts in Bangalore — Nameplates, Keychains, Medal Hangers",
+    "description": "Ferrouswheel makes personalised metal gifts in Bangalore: custom nameplates, keychains, bookmarks, medal hangers, wall clocks, necklaces & fandom decor. Laser-cut in steel, brass & copper. Pan-India delivery. Order on WhatsApp."
+  },
+  "categories": [
+    {
+      "id": 1,
+      "slug": "custom-metal-bookmarks",
+      "title": "Custom Metal Bookmarks with Your Name | Ferrouswheel Bangalore",
+      "description": "Personalised laser-cut metal bookmarks in steel, brass & copper — cricket, football, books, your name. Made in Bangalore, shipped pan-India. Great return gifts. Order on WhatsApp.",
+      "h1": "Custom Metal Bookmarks",
+      "intro": [
+        "A bookmark they'll actually keep. We laser-cut each one from steel, brass or copper in our Bommasandra workshop, shaped around whatever the reader loves — a cricket bat, a football, a favourite character — with their name cut right in.",
+        "Bookmarks are our go-to for return gifts, book-club gifts and school prize days: light to ship, tough enough to survive a school bag, and fully custom even in small batches."
+      ],
+      "ideas": ["Cricket bat with name", "Football bookmark", "Tennis racquet", "Book lover quotes", "School return gifts", "Teacher's Day gifts"]
+    },
+    {
+      "id": 2,
+      "slug": "custom-metal-keychains",
+      "title": "Custom Metal Keychains — Name, Car, Sports & Hobby | Ferrouswheel",
+      "description": "Personalised metal keychains laser-cut in Bangalore — car and bike silhouettes, sports, gym, music, names and initials. Steel, brass or copper. Pan-India delivery. Order on WhatsApp.",
+      "h1": "Custom Metal Keychains",
+      "intro": [
+        "No one likes boring keys. Send us the thing they're obsessed with — their car, their bike, their sport, their gym era — and we'll cut it in metal with their name on it.",
+        "Every keychain is designed for you first, previewed on WhatsApp, then laser-cut in-house. Ordering a set for a team, club or office? We do batches too."
+      ],
+      "ideas": ["Car silhouette", "Bike silhouette", "Gym & bodybuilding", "Guitar & music", "Name or initials", "Club or team sets"]
+    },
+    {
+      "id": 3,
+      "slug": "custom-metal-nameplates",
+      "title": "Custom Metal Name Plates for Home, Room & Desk | Ferrouswheel Bangalore",
+      "description": "Personalised metal nameplates handcrafted in Bangalore — family name plates for the door, kids' room signs and desk plates themed on tennis, cars, sneakers and more. Pan-India delivery.",
+      "h1": "Custom Metal Nameplates",
+      "intro": [
+        "A subtle way to claim your territory. Our nameplates pair a name with the thing that makes it yours — a tennis racquet, a sneaker, a car, a guitar — laser-cut from stainless steel, brass, copper or mild steel.",
+        "Made for front doors, kids' rooms, home offices and desks. Tell us where it's going and we'll size it to suit."
+      ],
+      "ideas": ["Family door nameplate", "Kids' room sign", "Desk nameplate", "Tennis & sports", "Cars & sneakers", "Housewarming gift"]
+    },
+    {
+      "id": 4,
+      "slug": "custom-medal-hangers",
+      "title": "Custom Medal Hangers & Medal Display Racks | Ferrouswheel Bangalore",
+      "description": "Personalised metal medal hangers for runners, cricketers, swimmers, footballers and school athletes. Your name and sport, laser-cut in Bangalore. Bulk orders for schools and clubs. Pan-India delivery.",
+      "h1": "Custom Medal Hangers",
+      "intro": [
+        "Medals deserve better than a drawer. Our medal hangers put every win on the wall — shaped around your sport, with your name cut in, built strong enough for a growing collection.",
+        "Popular with runners, cricketers, swimmers and young athletes — and with schools and clubs ordering for whole teams before Sports Day."
+      ],
+      "ideas": ["Running & marathon", "Cricket", "Swimming", "Football", "Hockey", "School Sports Day"]
+    },
+    {
+      "id": 5,
+      "slug": "custom-metal-necklaces",
+      "title": "Custom Metal Name Necklaces & Pendants | Ferrouswheel Bangalore",
+      "description": "Fun personalised metal necklaces and pendants — names, initials, hobbies and inside jokes, laser-cut in steel, brass or copper in Bangalore. Pan-India delivery. Order on WhatsApp.",
+      "h1": "Custom Metal Necklaces",
+      "intro": [
+        "Made to turn heads and spark laughs. Wear a name, an initial, a hobby or an inside joke — designed with you, then cut in metal.",
+        "A personal gift that doesn't look like everyone else's: birthdays, best friends, anniversaries."
+      ],
+      "ideas": ["Name pendant", "Initials", "Hobby charm", "Best-friend pair", "Inside joke", "Birthday gift"]
+    },
+    {
+      "id": 6,
+      "slug": "custom-metal-wall-clocks",
+      "title": "Custom Metal Wall Clocks — Sports & Hobby Themed | Ferrouswheel",
+      "description": "Personalised metal wall clocks where your sport or hobby replaces the numbers — football, cricket, cars, music and more. Handcrafted in Bangalore, delivered pan-India.",
+      "h1": "Custom Metal Wall Clocks",
+      "intro": [
+        "Watching time pass can be fun. On our clocks, your favourite sport or hobby replaces the numbers — so the wall says something about you, not just the time.",
+        "A statement piece for a bedroom, a games room or the office, and a gift that gets looked at every single day."
+      ],
+      "ideas": ["Football clock", "Cricket clock", "Car & racing", "Music themed", "Name on the dial", "Office gifting"]
+    },
+    {
+      "id": 7,
+      "slug": "metal-scale-models",
+      "title": "Handcrafted Metal Scale Models — Bikes & Cars | Ferrouswheel Bangalore",
+      "description": "Handcrafted metal scale models and table stands of bikes, cars and anything with wheels, made in our Bangalore workshop. Custom builds for riders, collectors and gifts.",
+      "h1": "Metal Scale Models",
+      "intro": [
+        "Smooth rides and cool looks. We build metal models of bikes, cars and anything with wheels and soul — including desk and table stands of your own ride.",
+        "Ferrouswheel started with a home-built go-kart, so these are close to our hearts. Send photos of the machine and we'll take it from there."
+      ],
+      "ideas": ["Your own bike", "Classic cars", "Table stand", "Rider gift", "Collector piece", "Garage decor"]
+    },
+    {
+      "id": 8,
+      "slug": "fandom-metal-wall-decor",
+      "title": "Fandom Metal Wall Art & Decor | Ferrouswheel Bangalore",
+      "description": "Custom metal wall art for fans — sci-fi, superheroes, motorsport, anime and gaming inspired pieces, laser-cut in Bangalore. Personalised and shipped pan-India.",
+      "h1": "Fandom Metal Wall Decor",
+      "intro": [
+        "For the fans who want it in metal. Bring us the movie, show, game or sport you live for and we'll design a piece of wall art around it.",
+        "Room makeovers, gaming setups and gifts for the friend who has already seen it twelve times."
+      ],
+      "ideas": ["Sci-fi", "Superheroes", "Motorsport", "Anime", "Gaming setup", "Room makeover"]
+    }
+  ],
+  "bulk": {
+    "slug": "bulk-orders",
+    "title": "Bulk Custom Metal Gifts for Schools, Clubs & Corporates | Ferrouswheel",
+    "description": "Bulk custom metal gifts from Ferrouswheel, Bangalore — medal hangers, bookmarks, keychains and mementos with your school crest or company logo. Cut in-house, pan-India delivery, PO invoicing.",
+    "h1": "Bulk Orders for Schools, Clubs & Companies"
+  }
+}
