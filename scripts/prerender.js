@@ -52,7 +52,7 @@ function render(page, noscript, crumbLabel) {
     swaps.push([/(<meta name="twitter:image" content=")[^"]*(")/, `$1${page.ogImage}$2`]);
   }
   const crumbs = [{ name: "Home", item: `${PAGES.site}/` }];
-  if (crumbLabel !== "Bulk Orders") crumbs.push({ name: "Products", item: `${PAGES.site}/#products` });
+  if (crumbLabel !== "Bulk Orders" && !page.sections) crumbs.push({ name: "Products", item: `${PAGES.site}/#products` });
   crumbs.push({ name: crumbLabel, item: url });
   const breadcrumb = {
     "@context": "https://schema.org",
@@ -76,6 +76,9 @@ for (const c of PAGES.categories) {
 }
 render(PAGES.bulk, `<h1>${esc(PAGES.bulk.h1)} — Ferrouswheel</h1><p>${esc(PAGES.bulk.description)}</p>${contact}<p>${links}</p>`, "Bulk Orders");
 
+for (const g of PAGES.guides) {
+  render(g, `<h1>${esc(g.h1)}</h1><p>${esc(g.intro)}</p>${g.sections.map((s) => `<h2>${esc(s.h2)}</h2>${s.p.map((p) => `<p>${esc(p)}</p>`).join("")}`).join("")}${contact}<p>${links}</p>`, g.h1);
+}
 fs.writeFileSync(path.join(BUILD, "index.html"), inject(base, "/"));
 fs.rmSync(path.join(BUILD, ".ssr"), { recursive: true, force: true });
 
@@ -84,6 +87,7 @@ const urls = [
   { loc: `${PAGES.site}/`, priority: "1.0" },
   { loc: `${PAGES.site}/${PAGES.bulk.slug}`, priority: "0.9" },
   ...PAGES.categories.map((c) => ({ loc: `${PAGES.site}/${c.slug}`, priority: "0.8" })),
+  ...PAGES.guides.map((g) => ({ loc: `${PAGES.site}/${g.slug}`, priority: "0.6" })),
 ];
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -91,4 +95,4 @@ ${urls.map((u) => `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${today}</last
 </urlset>
 `;
 fs.writeFileSync(path.join(BUILD, "sitemap.xml"), sitemap);
-console.log(`prerender: wrote ${PAGES.categories.length + 1} pages + sitemap.xml (${urls.length} URLs)`);
+console.log(`prerender: wrote ${PAGES.categories.length + PAGES.guides.length + 1} pages + sitemap.xml (${urls.length} URLs)`);

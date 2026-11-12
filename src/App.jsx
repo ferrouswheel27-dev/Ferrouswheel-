@@ -587,10 +587,10 @@ function BulkSection() {
     </section>
   );
 }
-function Crumbs({ label, inProducts = true }) {
+function Crumbs({ label, inProducts = true, inGuides = false }) {
   return (
     <nav className="crumbs" aria-label="Breadcrumb">
-      <a href="/">Home</a><span>/</span>{inProducts && <><a href="/#products">Products</a><span>/</span></>}<span aria-current="page">{label}</span>
+      <a href="/">Home</a><span>/</span>{inProducts && !inGuides && <><a href="/#products">Products</a><span>/</span></>}{inGuides && <><span>Guides</span><span>/</span></>}<span aria-current="page">{label}</span>
     </nav>
   );
 }
@@ -751,6 +751,50 @@ function BulkPage() {
     </div>
   );
 }
+function GuidePage({ guide }) {
+  const related = guide.related.map((id) => products.find((p) => p.id === id)).filter(Boolean);
+  return (
+    <div className="cat-page guide-page">
+      <article>
+        <header className="guide-head">
+          <Crumbs label={guide.h1} inGuides />
+          <h1 className="cat-title guide-title">{guide.h1}</h1>
+          <p className="guide-intro">{guide.intro}</p>
+        </header>
+        {guide.sections.map((sec) => {
+          const linked = sec.link && products.find((p) => p.id === sec.link[0]);
+          return (
+            <section key={sec.h2} className="guide-section">
+              <h2>{sec.h2}</h2>
+              {sec.p.map((t, i) => <p key={i}>{t}</p>)}
+              {linked && <a className="guide-link" href={hrefFor(linked)}>{sec.link[1]} →</a>}
+            </section>
+          );
+        })}
+        <div className="order-cta-box guide-cta">
+          <p>Have an idea? Send us a photo or a rough sketch and we'll show you a design before we cut anything.</p>
+          <div className="cta-row">
+            <a href={WA_DEFAULT} target="_blank" rel="noreferrer" className="btn-primary">💬 WHATSAPP US</a>
+            <a href={`/${PAGES.bulk.slug}`} className="btn-secondary">BULK ORDERS →</a>
+          </div>
+        </div>
+      </article>
+      <section className="cat-section">
+        <span className="section-tag">MENTIONED IN THIS GUIDE</span>
+        <h2 className="cat-h2">Made in our workshop</h2>
+        <div className="related-grid">
+          {related.map((p) => (
+            <a key={p.id} href={hrefFor(p)} className="related-card" style={{ "--accent": p.accent }}>
+              <img src={sized(p.image, 480)} alt="" loading="lazy" width="480" height="360" />
+              <span>{pageFor(p).h1}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+      <Contact />
+    </div>
+  );
+}
 function Footer() {
   return (
     <footer className="footer">
@@ -759,6 +803,9 @@ function Footer() {
       <nav className="footer-links" aria-label="Product categories">
         {products.map((p) => <a key={p.id} href={hrefFor(p)}>{pageFor(p).h1}</a>)}
         <a href={`/${PAGES.bulk.slug}`}>Bulk Orders</a>
+      </nav>
+      <nav className="footer-links footer-guides" aria-label="Guides">
+        {PAGES.guides.map((g) => <a key={g.slug} href={`/${g.slug}`}>{g.h1}</a>)}
       </nav>
       <p className="footer-copy">© 2026 Ferrouswheel · Est. 2024 · Bangalore, India</p>
     </footer>
@@ -769,10 +816,12 @@ export default function FerrouswheelWebsite() {
   const category = PAGES.categories.find((c) => `/${c.slug}` === CURRENT_PATH);
   const product = category && products.find((p) => p.id === category.id);
   const isBulk = CURRENT_PATH === `/${PAGES.bulk.slug}`;
-  const isHome = !product && !isBulk;
+  const guide = PAGES.guides.find((g) => `/${g.slug}` === CURRENT_PATH);
+  const isHome = !product && !isBulk && !guide;
   useEffect(() => {
     if (product) setMeta(category.title, category.description, CURRENT_PATH);
     else if (isBulk) setMeta(PAGES.bulk.title, PAGES.bulk.description, CURRENT_PATH);
+    else if (guide) setMeta(guide.title, guide.description, CURRENT_PATH);
     else {
       setMeta(PAGES.home.title, PAGES.home.description, "/");
       const id = window.location.hash.slice(1);
@@ -1013,6 +1062,17 @@ export default function FerrouswheelWebsite() {
         .idea-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
         .idea-chips .value-chip { font-size: 14px; padding: 8px 16px; }
         .cat-note { color: var(--muted); font-size: 14px; }
+        .guide-page article { max-width: 760px; margin: 0 auto; padding: 56px 40px 24px; }
+        .guide-head { margin-bottom: 36px; }
+        .guide-title { font-size: clamp(48px, 7vw, 84px); margin-bottom: 22px; }
+        .guide-intro { color: #cfcfcf; font-size: 18px; line-height: 1.75; }
+        .guide-section { padding: 26px 0; border-top: 1px solid var(--border); }
+        .guide-section h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 4vw, 38px); line-height: 1.05; color: var(--text); margin-bottom: 14px; }
+        .guide-section p { color: #bdbdbd; font-size: 16px; line-height: 1.8; margin-bottom: 12px; }
+        .guide-link { display: inline-block; margin-top: 6px; font-family: var(--font-cond); font-weight: 700; letter-spacing: 2px; font-size: 13px; color: var(--red); text-decoration: none; text-transform: uppercase; }
+        .guide-link:hover { text-decoration: underline; }
+        .guide-cta { margin-top: 30px; }
+        .footer-guides { margin-top: -8px; }
         .faq { display: grid; gap: 10px; max-width: 760px; }
         .faq details { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px; }
         .faq summary { cursor: pointer; font-family: var(--font-cond); font-size: 18px; letter-spacing: 0.5px; color: var(--text); list-style: none; }
@@ -1039,6 +1099,7 @@ export default function FerrouswheelWebsite() {
           .products, .about, .how-to-order, .contact, .bulk { padding: 60px 24px; }
           .cat-hero { grid-template-columns: 1fr; padding: 36px 24px 48px; gap: 32px; }
           .cat-section, .cat-page .how-to-order { padding: 40px 24px; }
+          .guide-page article { padding: 36px 24px 16px; }
           .modal-main-image { height: 260px; }
           .spin-stage { height: 300px; }
           .spin-card { width: 120px; height: 120px; margin: -60px 0 0 -60px; }
@@ -1059,6 +1120,8 @@ export default function FerrouswheelWebsite() {
         <CategoryPage product={product} page={category} />
       ) : isBulk ? (
         <BulkPage />
+      ) : guide ? (
+        <GuidePage guide={guide} />
       ) : (
         <>
           <Hero />
