@@ -7,7 +7,7 @@ const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`
 const WA_DEFAULT = WA("Hi Ferrouswheel! I'd like to order a custom metal gift.");
 const WA_BULK = WA("Hi Ferrouswheel! I have a bulk order enquiry.\nSchool / company:\nProduct:\nQuantity:\nNeeded by:");
 const MAIL_BULK = "mailto:ferrouswheel27@gmail.com?subject=" + encodeURIComponent("Bulk order enquiry");
-const CURRENT_PATH = (typeof window !== "undefined" ? window.location.pathname : "/").replace(/\.html$/, "").replace(/\/+$/, "") || "/";
+const CURRENT_PATH = (globalThis.__FW_PATH__ || (typeof window !== "undefined" ? window.location.pathname : "/")).replace(/\.html$/, "").replace(/\/+$/, "") || "/";
 const pageFor = (product) => PAGES.categories.find((c) => c.id === product.id);
 const hrefFor = (product) => `/${pageFor(product).slug}`;
 function setMeta(title, description, path) {
@@ -806,7 +806,7 @@ export default function FerrouswheelWebsite() {
   }, []);
   return (
     <div className="fw-app">
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
           --red: #E63946; --red-btn: #D62839; --orange: #FF6B35; --black: #0A0A0A; --dark: #111111;
@@ -1052,7 +1052,7 @@ export default function FerrouswheelWebsite() {
           .modal-footer { flex-direction: column; align-items: flex-start; }
           .ember:nth-child(n+7) { display: none; }
         }
-      `}</style>
+      ` }} />
       <Navbar activeSection={isHome ? activeSection : ""} />
       <main id="main">
       {product ? (

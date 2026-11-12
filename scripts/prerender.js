@@ -5,6 +5,30 @@ const path = require("path");
 const PAGES = require("../src/pages.json");
 
 const BUILD = path.join(__dirname, "..", "build");
+
+// Server-render the React app for each URL so crawlers that don't run JavaScript see the real content.
+const esbuild = require("esbuild");
+const React = require("react");
+const { renderToString } = require("react-dom/server");
+const SSR_OUT = path.join(BUILD, ".ssr", "app.cjs");
+esbuild.buildSync({
+  entryPoints: [path.join(__dirname, "..", "src", "App.jsx")],
+  bundle: true, platform: "node", format: "cjs", outfile: SSR_OUT,
+  external: ["react", "react-dom"], jsx: "automatic", loader: { ".js": "jsx" }, logLevel: "warning",
+});
+function ssr(urlPath) {
+  globalThis.__FW_PATH__ = urlPath;
+  delete require.cache[require.resolve(SSR_OUT)];
+  const App = require(SSR_OUT).default;
+  const html = renderToString(React.createElement(App));
+  delete globalThis.__FW_PATH__;
+  return html;
+}
+const inject = (html, urlPath) => {
+  if (!html.includes('<div id="root"></div>')) throw new Error("prerender: root div not found");
+  return html.replace('<div id="root"></div>', `<div id="root">${ssr(urlPath)}</div>`);
+};
+
 const base = fs.readFileSync(path.join(BUILD, "index.html"), "utf8");
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -41,7 +65,7 @@ function render(page, noscript, crumbLabel) {
     if (!re.test(html)) throw new Error(`prerender: pattern not found ${re}`);
     html = html.replace(re, val);
   }
-  fs.writeFileSync(path.join(BUILD, `${page.slug}.html`), html);
+  fs.writeFileSync(path.join(BUILD, `${page.slug}.html`), inject(html, `/${page.slug}`));
 }
 
 const contact = "<p>Order on WhatsApp: +91 81056 77799 · Instagram: @ferrouswheel27 · Email: ferrouswheel27@gmail.com</p>";
@@ -51,6 +75,9 @@ for (const c of PAGES.categories) {
   render(c, `<h1>${esc(c.h1)} — Ferrouswheel, Bangalore</h1>${c.intro.map((p) => `<p>${esc(p)}</p>`).join("")}${contact}<p>${links}</p>`, c.h1);
 }
 render(PAGES.bulk, `<h1>${esc(PAGES.bulk.h1)} — Ferrouswheel</h1><p>${esc(PAGES.bulk.description)}</p>${contact}<p>${links}</p>`, "Bulk Orders");
+
+fs.writeFileSync(path.join(BUILD, "index.html"), inject(base, "/"));
+fs.rmSync(path.join(BUILD, ".ssr"), { recursive: true, force: true });
 
 const today = new Date().toISOString().slice(0, 10);
 const urls = [
