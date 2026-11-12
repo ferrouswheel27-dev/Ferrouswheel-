@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import PAGES from "./pages.json";
 const CLD = "https://res.cloudinary.com/dbzmj5nvh/image/upload/w_800,q_auto,f_auto";
 const LOGO = "/logo.svg";
+const sized = (url, w) => url.replace("/w_800,", `/w_${w},`);
 const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`;
 const WA_DEFAULT = WA("Hi Ferrouswheel! I'd like to order a custom metal gift.");
 const WA_BULK = WA("Hi Ferrouswheel! I have a bulk order enquiry.\nSchool / company:\nProduct:\nQuantity:\nNeeded by:");
@@ -236,7 +237,7 @@ function GalleryModal({ product, onClose, start = 0, showPageLink = true }) {
         {gallery.length > 1 && (
           <div className="modal-thumbs">
             {gallery.map((img, i) => (
-              <img key={i} src={img} alt="" loading="lazy" className={`thumb ${i === current ? "active" : ""}`} onClick={() => setCurrent(i)} />
+              <img key={i} src={sized(img, 160)} alt="" loading="lazy" width="70" height="70" className={`thumb ${i === current ? "active" : ""}`} onClick={() => setCurrent(i)} />
             ))}
           </div>
         )}
@@ -320,8 +321,9 @@ function Hero() {
       <MetalPattern innerRef={patternRef} />
       <Embers count={12} />
       <div className="hero-content">
-        <div className="hero-badge">EST. 2024 · BANGALORE</div>
+        <p className="hero-badge">CUSTOM METAL GIFTS · BANGALORE</p>
         <h1 className="hero-title">
+          <span className="sr-only">Custom metal gifts made in Bangalore: </span>
           <span className="hero-line1">METAL</span>
           <span className="hero-line2">GIFTS</span>
           <span className="hero-line3">THAT HIT</span>
@@ -358,7 +360,7 @@ function ProductCard({ product, onClick, index }) {
     <div className="product-card reveal" style={{ "--accent": product.accent, "--reveal-delay": `${index * 0.07}s` }} onClick={onClick}>
       <div className="card-number">0{product.id}</div>
       <div className="card-image-wrap">
-        <img src={product.image} alt={`Custom metal ${product.name.toLowerCase()} by Ferrouswheel, Bangalore`} loading="lazy" className="card-image" />
+        <img src={sized(product.image, 600)} alt={`Custom metal ${product.name.toLowerCase()} by Ferrouswheel, Bangalore`} loading="lazy" width="600" height="400" className="card-image" />
         <div className="card-image-overlay">
           <span>VIEW GALLERY →</span>
         </div>
@@ -426,7 +428,7 @@ function SpinShowcase({ onSelect }) {
               aria-label={`View ${p.name}`}
               onClick={() => { if (st.moved < 8) onSelect(p); }}
             >
-              <img src={p.image} alt="" loading="lazy" draggable="false" />
+              <img src={sized(p.image, 320)} alt="" loading="lazy" draggable="false" width="150" height="150" />
               <span>{p.name.toUpperCase()}</span>
             </button>
           ))}
@@ -498,7 +500,7 @@ function HowToOrder() {
           <div key={i} className="step-card reveal" style={{ "--reveal-delay": `${i * 0.07}s` }}>
             <div className="step-num">{step.num}</div>
             <div className="step-content">
-              <h4>{step.title}</h4>
+              <h3>{step.title}</h3>
               <p>{step.desc}</p>
             </div>
           </div>
@@ -571,7 +573,7 @@ function BulkSection() {
         {BULK_POINTS.map((b, i) => (
           <div key={b.title} className="step-card reveal" style={{ "--reveal-delay": `${i * 0.07}s` }}>
             <div className="bulk-icon">{b.icon}</div>
-            <div className="step-content"><h4>{b.title}</h4><p>{b.desc}</p></div>
+            <div className="step-content"><h3>{b.title}</h3><p>{b.desc}</p></div>
           </div>
         ))}
       </div>
@@ -597,7 +599,7 @@ function CategoryPage({ product, page }) {
   const gallery = product.gallery || [product.image];
   const others = products.filter((p) => p.id !== product.id);
   return (
-    <main className="cat-page" style={{ "--accent": product.accent }}>
+    <div className="cat-page" style={{ "--accent": product.accent }}>
       <section className="cat-hero">
         <MetalPattern />
         <div className="cat-hero-copy">
@@ -622,7 +624,7 @@ function CategoryPage({ product, page }) {
           <div className="cat-gallery">
             {gallery.map((img, i) => (
               <button key={img} className="cat-thumb" onClick={() => setOpen(i)} aria-label={`View photo ${i + 1}`}>
-                <img src={img} alt={`${page.h1} — piece ${i + 1} by Ferrouswheel`} loading="lazy" />
+                <img src={sized(img, 600)} alt={`${page.h1} — piece ${i + 1} by Ferrouswheel`} loading="lazy" width="600" height="600" />
               </button>
             ))}
           </div>
@@ -634,6 +636,28 @@ function CategoryPage({ product, page }) {
         <div className="idea-chips">{page.ideas.map((t) => <span key={t} className="value-chip">{t}</span>)}</div>
         <p className="cat-note">Have something else in mind? Send us a photo or a rough sketch on WhatsApp. If you can describe it, we can probably make it.</p>
       </section>
+      <section className="cat-section">
+        <span className="section-tag">QUESTIONS</span>
+        <h2 className="cat-h2">Good to know</h2>
+        <div className="faq">
+          <details>
+            <summary>How do I order {page.h1.toLowerCase()}?</summary>
+            <p>Message us on WhatsApp at +91 81056 77799 with your idea, a name, and a photo or sketch if you have one. We send you the design first and only cut once you're happy with it.</p>
+          </details>
+          <details>
+            <summary>Which metals can you use?</summary>
+            <p>{product.materials.replace(/ · /g, ", ")}. We'll suggest what suits your design and budget.</p>
+          </details>
+          <details>
+            <summary>Do you deliver outside Bangalore?</summary>
+            <p>Yes. We're based in Bommasandra, Bangalore, and we ship across India.</p>
+          </details>
+          <details>
+            <summary>Can I order in bulk for a school, club or company?</summary>
+            <p>Yes. We cut your crest or logo in, and can invoice against a purchase order. See <a href={`/${PAGES.bulk.slug}`}>bulk orders</a> for how it works.</p>
+          </details>
+        </div>
+      </section>
       <HowToOrder />
       <section className="cat-section">
         <span className="section-tag">MORE FROM THE WORKSHOP</span>
@@ -641,7 +665,7 @@ function CategoryPage({ product, page }) {
         <div className="related-grid">
           {others.map((p) => (
             <a key={p.id} href={hrefFor(p)} className="related-card" style={{ "--accent": p.accent }}>
-              <img src={p.image} alt="" loading="lazy" />
+              <img src={sized(p.image, 480)} alt="" loading="lazy" width="480" height="360" />
               <span>{pageFor(p).h1}</span>
             </a>
           ))}
@@ -649,7 +673,7 @@ function CategoryPage({ product, page }) {
       </section>
       <Contact />
       {open !== null && <GalleryModal product={product} start={open} showPageLink={false} onClose={() => setOpen(null)} />}
-    </main>
+    </div>
   );
 }
 function BulkPage() {
@@ -662,7 +686,7 @@ function BulkPage() {
     { num: "05", title: "We deliver", desc: "Packed and sent to your school, office or venue, anywhere in India." },
   ];
   return (
-    <main className="cat-page">
+    <div className="cat-page">
       <section className="cat-hero bulk-hero">
         <MetalPattern />
         <div className="cat-hero-copy">
@@ -685,7 +709,7 @@ function BulkPage() {
             const p = products.find((x) => x.id === id);
             return (
               <a key={id} href={hrefFor(p)} className="related-card" style={{ "--accent": p.accent }}>
-                <img src={p.image} alt="" loading="lazy" />
+                <img src={sized(p.image, 480)} alt="" loading="lazy" width="480" height="360" />
                 <span>{pageFor(p).h1}</span>
                 <small>{use}</small>
               </a>
@@ -700,7 +724,7 @@ function BulkPage() {
           {BULK_POINTS.map((b) => (
             <div key={b.title} className="step-card">
               <div className="bulk-icon">{b.icon}</div>
-              <div className="step-content"><h4>{b.title}</h4><p>{b.desc}</p></div>
+              <div className="step-content"><h3>{b.title}</h3><p>{b.desc}</p></div>
             </div>
           ))}
         </div>
@@ -712,7 +736,7 @@ function BulkPage() {
           {steps.map((s) => (
             <div key={s.num} className="step-card">
               <div className="step-num">{s.num}</div>
-              <div className="step-content"><h4>{s.title}</h4><p>{s.desc}</p></div>
+              <div className="step-content"><h3>{s.title}</h3><p>{s.desc}</p></div>
             </div>
           ))}
         </div>
@@ -724,7 +748,7 @@ function BulkPage() {
         </div>
       </section>
       <Contact />
-    </main>
+    </div>
   );
 }
 function Footer() {
@@ -783,7 +807,6 @@ export default function FerrouswheelWebsite() {
   return (
     <div className="fw-app">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
           --red: #E63946; --orange: #FF6B35; --black: #0A0A0A; --dark: #111111;
@@ -819,6 +842,7 @@ export default function FerrouswheelWebsite() {
           100% { transform: translate(var(--drift), -102vh); opacity: 0; }
         }
         .hero-content { flex: 1; max-width: 700px; position: relative; z-index: 2; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
         .hero-badge { font-family: var(--font-cond); font-size: 12px; letter-spacing: 4px; color: var(--red); margin-bottom: 24px; }
         .hero-title { font-family: var(--font-display); line-height: 0.9; margin-bottom: 24px; }
         .hero-line1, .hero-line2, .hero-line3 { display: block; font-size: clamp(72px, 12vw, 140px); color: var(--text); }
@@ -896,7 +920,7 @@ export default function FerrouswheelWebsite() {
         .card-name { font-family: var(--font-display); font-size: 32px; color: var(--text); margin: 16px 24px 4px; }
         .card-tagline { font-size: 12px; color: var(--accent); font-style: italic; margin: 0 24px 12px; }
         .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin: 0 24px 16px; }
-        .card-materials { font-family: var(--font-cond); font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.3); margin: 0 24px 20px; }
+        .card-materials { font-family: var(--font-cond); font-size: 10px; letter-spacing: 2px; color: rgba(255,255,255,0.6); margin: 0 24px 20px; }
         .card-cta { font-family: var(--font-cond); font-size: 12px; letter-spacing: 2px; color: var(--accent); margin: 0 24px; font-weight: 700; }
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .modal { background: var(--dark); border: 1px solid var(--border); border-radius: 8px; max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
@@ -935,7 +959,7 @@ export default function FerrouswheelWebsite() {
         .step-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 24px; display: flex; flex-direction: column; gap: 12px; transition: border-color 0.2s; }
         .step-card:hover { border-color: rgba(230,57,70,0.4); }
         .step-num { font-family: var(--font-display); font-size: 40px; color: var(--red); opacity: 0.6; }
-        .step-content h4 { font-family: var(--font-cond); font-size: 18px; letter-spacing: 1px; color: var(--text); margin-bottom: 6px; }
+        .step-content h3 { font-family: var(--font-cond); font-size: 18px; letter-spacing: 1px; color: var(--text); margin-bottom: 6px; }
         .step-content p { font-size: 13px; color: var(--muted); line-height: 1.6; }
         .order-cta-box { text-align: center; border: 1px solid var(--border); border-radius: 4px; padding: 48px; background: rgba(230,57,70,0.04); max-width: 1240px; margin: 0 auto; }
         .order-cta-box p { color: var(--muted); font-size: 16px; margin-bottom: 24px; }
@@ -949,7 +973,7 @@ export default function FerrouswheelWebsite() {
         .contact-value { font-size: 13px; color: var(--text); }
         .footer { padding: 40px; border-top: 1px solid var(--border); text-align: center; display: flex; flex-direction: column; align-items: center; }
         .footer-tagline { font-size: 13px; color: var(--muted); font-style: italic; margin-bottom: 8px; }
-        .footer-copy { font-size: 11px; color: rgba(255,255,255,0.2); font-family: var(--font-cond); letter-spacing: 2px; }
+        .footer-copy { font-size: 11px; color: rgba(255,255,255,0.55); font-family: var(--font-cond); letter-spacing: 2px; }
         .nav-logo { display: block; }
         .card-cta { display: inline-block; text-decoration: none; }
         .card-cta:hover { text-decoration: underline; }
@@ -976,7 +1000,7 @@ export default function FerrouswheelWebsite() {
         .cat-title { font-family: var(--font-display); font-size: clamp(54px, 8vw, 104px); line-height: 0.92; color: var(--text); }
         .cat-tagline { color: var(--accent, var(--red)); font-style: italic; font-size: 16px; margin: 14px 0 22px; }
         .cat-intro { color: #bdbdbd; font-size: 16px; line-height: 1.75; margin-bottom: 14px; max-width: 620px; }
-        .cat-materials { font-family: var(--font-cond); font-size: 12px; letter-spacing: 2px; color: rgba(255,255,255,0.4); margin: 18px 0 26px; }
+        .cat-materials { font-family: var(--font-cond); font-size: 12px; letter-spacing: 2px; color: rgba(255,255,255,0.6); margin: 18px 0 26px; }
         .cat-hero-img { position: relative; z-index: 2; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; aspect-ratio: 4 / 5; background: var(--card-bg); padding: 0; cursor: zoom-in; box-shadow: 0 30px 60px rgba(0,0,0,0.5); }
         .cat-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s; }
         .cat-hero-img:hover img { transform: scale(1.04); }
@@ -989,11 +1013,19 @@ export default function FerrouswheelWebsite() {
         .idea-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
         .idea-chips .value-chip { font-size: 14px; padding: 8px 16px; }
         .cat-note { color: var(--muted); font-size: 14px; }
+        .faq { display: grid; gap: 10px; max-width: 760px; }
+        .faq details { background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; padding: 16px 20px; }
+        .faq summary { cursor: pointer; font-family: var(--font-cond); font-size: 18px; letter-spacing: 0.5px; color: var(--text); list-style: none; }
+        .faq summary::-webkit-details-marker { display: none; }
+        .faq summary::after { content: "+"; float: right; color: var(--red); font-size: 20px; line-height: 1; }
+        .faq details[open] summary::after { content: "–"; }
+        .faq p { color: #bdbdbd; font-size: 15px; line-height: 1.7; margin-top: 10px; }
+        .faq a { color: var(--red); }
         .cat-page .how-to-order { padding: 56px 40px; }
         .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
         .related-card { display: flex; flex-direction: column; background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
         .related-card:hover { border-color: var(--accent); transform: translateY(-3px); }
-        .related-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
+        .related-card img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
         .related-card span { font-family: var(--font-display); font-size: 22px; color: var(--text); padding: 12px 14px 4px; }
         .related-card small { color: var(--muted); font-size: 12px; padding: 0 14px 14px; line-height: 1.5; }
         .related-card span:last-child { padding-bottom: 14px; }
@@ -1022,6 +1054,7 @@ export default function FerrouswheelWebsite() {
         }
       `}</style>
       <Navbar activeSection={isHome ? activeSection : ""} />
+      <main id="main">
       {product ? (
         <CategoryPage product={product} page={category} />
       ) : isBulk ? (
@@ -1036,6 +1069,7 @@ export default function FerrouswheelWebsite() {
           <Contact />
         </>
       )}
+      </main>
       <Footer />
     </div>
   );

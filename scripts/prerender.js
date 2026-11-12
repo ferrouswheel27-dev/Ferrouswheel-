@@ -8,7 +8,7 @@ const BUILD = path.join(__dirname, "..", "build");
 const base = fs.readFileSync(path.join(BUILD, "index.html"), "utf8");
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-function render(page, noscript) {
+function render(page, noscript, crumbLabel) {
   const url = `${PAGES.site}/${page.slug}`;
   const t = esc(page.title);
   const d = esc(page.description);
@@ -23,6 +23,19 @@ function render(page, noscript) {
     [/(<meta name="twitter:description" content=")[^"]*(")/, `$1${d}$2`],
     [/<noscript>[\s\S]*?<\/noscript>/, `<noscript>${noscript}</noscript>`],
   ];
+  if (page.ogImage) {
+    swaps.push([/(<meta property="og:image" content=")[^"]*(")/, `$1${page.ogImage}$2`]);
+    swaps.push([/(<meta name="twitter:image" content=")[^"]*(")/, `$1${page.ogImage}$2`]);
+  }
+  const crumbs = [{ name: "Home", item: `${PAGES.site}/` }];
+  if (crumbLabel !== "Bulk Orders") crumbs.push({ name: "Products", item: `${PAGES.site}/#products` });
+  crumbs.push({ name: crumbLabel, item: url });
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: crumbs.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: c.item })),
+  };
+  swaps.push([/<\/head>/, `<script type="application/ld+json">${JSON.stringify(breadcrumb)}</script></head>`]);
   let html = base;
   for (const [re, val] of swaps) {
     if (!re.test(html)) throw new Error(`prerender: pattern not found ${re}`);
@@ -35,9 +48,9 @@ const contact = "<p>Order on WhatsApp: +91 81056 77799 · Instagram: @ferrouswhe
 const links = PAGES.categories.map((c) => `<a href="/${c.slug}">${esc(c.h1)}</a>`).join(" · ");
 
 for (const c of PAGES.categories) {
-  render(c, `<h1>${esc(c.h1)} — Ferrouswheel, Bangalore</h1>${c.intro.map((p) => `<p>${esc(p)}</p>`).join("")}${contact}<p>${links}</p>`);
+  render(c, `<h1>${esc(c.h1)} — Ferrouswheel, Bangalore</h1>${c.intro.map((p) => `<p>${esc(p)}</p>`).join("")}${contact}<p>${links}</p>`, c.h1);
 }
-render(PAGES.bulk, `<h1>${esc(PAGES.bulk.h1)} — Ferrouswheel</h1><p>${esc(PAGES.bulk.description)}</p>${contact}<p>${links}</p>`);
+render(PAGES.bulk, `<h1>${esc(PAGES.bulk.h1)} — Ferrouswheel</h1><p>${esc(PAGES.bulk.description)}</p>${contact}<p>${links}</p>`, "Bulk Orders");
 
 const today = new Date().toISOString().slice(0, 10);
 const urls = [
