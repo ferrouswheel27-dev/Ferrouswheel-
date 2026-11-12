@@ -809,7 +809,7 @@ export default function FerrouswheelWebsite() {
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
-          --red: #E63946; --orange: #FF6B35; --black: #0A0A0A; --dark: #111111;
+          --red: #E63946; --red-btn: #D62839; --orange: #FF6B35; --black: #0A0A0A; --dark: #111111;
           --card-bg: #161616; --border: rgba(255,255,255,0.07); --text: #F0F0F0; --muted: #888;
           --font-display: 'Bebas Neue', sans-serif; --font-body: 'Barlow', sans-serif; --font-cond: 'Barlow Condensed', sans-serif;
         }
@@ -819,7 +819,7 @@ export default function FerrouswheelWebsite() {
         .nav-links { display: flex; align-items: center; gap: 32px; }
         .nav-link { background: none; border: none; color: var(--muted); font-family: var(--font-cond); font-size: 13px; letter-spacing: 2px; cursor: pointer; transition: color 0.2s; }
         .nav-link:hover, .nav-link.active { color: var(--red); }
-        .nav-cta { background: var(--red); color: #fff; padding: 8px 20px; font-family: var(--font-cond); font-size: 13px; font-weight: 700; letter-spacing: 2px; text-decoration: none; border-radius: 2px; transition: background 0.2s; }
+        .nav-cta { background: var(--red-btn); color: #fff; padding: 8px 20px; font-family: var(--font-cond); font-size: 13px; font-weight: 700; letter-spacing: 2px; text-decoration: none; border-radius: 2px; transition: background 0.2s; }
         .nav-cta:hover { background: #c0303b; }
         .hamburger { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 4px; z-index: 102; }
         .hamburger span { width: 24px; height: 2px; background: var(--text); display: block; transition: transform 0.25s, opacity 0.2s; }
@@ -849,8 +849,8 @@ export default function FerrouswheelWebsite() {
         .hero-accent { display: block; font-size: clamp(72px, 12vw, 140px); color: var(--red); }
         .hero-tagline { font-size: 16px; color: var(--muted); font-style: italic; margin-bottom: 40px; }
         .hero-actions { display: flex; gap: 16px; margin-bottom: 60px; flex-wrap: wrap; }
-        .btn-primary { background: var(--red); color: #fff; padding: 14px 28px; font-family: var(--font-cond); font-size: 14px; font-weight: 700; letter-spacing: 2px; text-decoration: none; border-radius: 2px; border: none; cursor: pointer; transition: all 0.2s; display: inline-block; }
-        .btn-primary:hover { background: #c0303b; transform: translateY(-2px); }
+        .btn-primary { background: var(--red-btn); color: #fff; padding: 14px 28px; font-family: var(--font-cond); font-size: 14px; font-weight: 700; letter-spacing: 2px; text-decoration: none; border-radius: 2px; border: none; cursor: pointer; transition: all 0.2s; display: inline-block; }
+        .btn-primary:hover { background: #b81f2e; transform: translateY(-2px); }
         .btn-primary.large { padding: 18px 40px; font-size: 16px; }
         .btn-secondary { background: transparent; color: var(--text); padding: 14px 28px; font-family: var(--font-cond); font-size: 14px; font-weight: 700; letter-spacing: 2px; border: 1px solid var(--border); border-radius: 2px; cursor: pointer; transition: all 0.2s; }
         .btn-secondary:hover { border-color: var(--red); color: var(--red); }
