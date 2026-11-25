@@ -2,7 +2,9 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import PAGES from "./pages.json";
 const CLD = "https://res.cloudinary.com/dbzmj5nvh/image/upload/w_800,q_auto,f_auto";
 const LOGO = "/logo.svg";
-const sized = (url, w) => url.replace("/w_800,", `/w_${w},`);
+const LOCAL = (name) => `/images/${name}.webp`;
+// Cloudinary images resize via the URL; self-hosted ones have a small "-sm" copy for thumbnails and cards
+const sized = (url, w) => url.startsWith("/images/") ? (w <= 600 ? url.replace(/\.webp$/, "-sm.webp") : url) : url.replace("/w_800,", `/w_${w},`);
 const WA = (msg) => `https://wa.me/918105677799?text=${encodeURIComponent(msg)}`;
 const WA_DEFAULT = WA("Hi Ferrouswheel! I'd like to order a custom metal gift.");
 const WA_BULK = WA("Hi Ferrouswheel! I have a bulk order enquiry.\nSchool / company:\nProduct:\nQuantity:\nNeeded by:");
@@ -28,6 +30,10 @@ const products = [
     gallery: [
       `${CLD}/Photoroom_20260304_111937_eeelb5.jpg`,
       `${CLD}/Photoroom_20260106_150230_srgjsu.jpg`,
+      LOCAL("bookmark-spider-open-book"),
+      LOCAL("bookmark-bat-in-book"),
+      LOCAL("bookmark-keychain-bat-set"),
+      LOCAL("bookmark-keychain-spider-set"),
     ],
   },
   {
@@ -43,6 +49,13 @@ const products = [
       `${CLD}/Photoroom_20260304_120831_srxvpo.jpg`,
       `${CLD}/Photoroom_20260307_152338_sfesbn.jpg`,
       `${CLD}/Photoroom_20260304_112748_qwu95i.jpg`,
+      LOCAL("keychain-basketball-bag"),
+      LOCAL("keychain-spider-closeup"),
+      LOCAL("keychain-bat-moody"),
+      LOCAL("keychain-helmet-bag"),
+      LOCAL("keychain-spider-backpack"),
+      LOCAL("keychain-bat-backpack"),
+      LOCAL("keychain-filigree-teardrop"),
     ],
   },
   {
