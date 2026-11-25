@@ -239,7 +239,7 @@ function GalleryModal({ product, onClose, start = 0, showPageLink = true }) {
           <p className="modal-tagline">"{product.tagline}"</p>
         </div>
         <div className="modal-main-image">
-          <img src={gallery[current]} alt={`Custom metal ${product.name.toLowerCase()} by Ferrouswheel, Bangalore`} />
+          <img src={gallery[current]} className={gallery[current].startsWith("/images/") ? "fit-whole" : undefined} alt={`Custom metal ${product.name.toLowerCase()} by Ferrouswheel, Bangalore`} />
           {gallery.length > 1 && (
             <>
               <button className="modal-nav prev" aria-label="Previous image" onClick={() => setCurrent(c => (c - 1 + gallery.length) % gallery.length)}>‹</button>
@@ -637,7 +637,7 @@ function CategoryPage({ product, page }) {
           <div className="cat-gallery">
             {gallery.map((img, i) => (
               <button key={img} className="cat-thumb" onClick={() => setOpen(i)} aria-label={`View photo ${i + 1}`}>
-                <img src={sized(img, 600)} alt={`${page.h1} — piece ${i + 1} by Ferrouswheel`} loading="lazy" width="600" height="600" />
+                <img src={sized(img, 600)} className={img.startsWith("/images/") ? "fit-whole" : undefined} alt={`${page.h1} — piece ${i + 1} by Ferrouswheel`} loading="lazy" width="600" height="600" />
               </button>
             ))}
           </div>
@@ -993,6 +993,7 @@ export default function FerrouswheelWebsite() {
         .modal-tagline { font-size: 13px; color: var(--red); font-style: italic; margin-top: 4px; }
         .modal-main-image { position: relative; width: 100%; height: 400px; margin-top: 16px; overflow: hidden; }
         .modal-main-image img { width: 100%; height: 100%; object-fit: cover; }
+        .modal-main-image img.fit-whole { object-fit: contain; background: #000; }
         .modal-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.6); border: none; color: #fff; font-size: 32px; width: 48px; height: 48px; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
         .modal-nav:hover { background: var(--red); }
         .modal-nav.prev { left: 12px; }
@@ -1071,6 +1072,7 @@ export default function FerrouswheelWebsite() {
         .cat-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
         .cat-thumb { aspect-ratio: 1; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; padding: 0; background: var(--card-bg); cursor: zoom-in; }
         .cat-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+        .cat-thumb img.fit-whole { object-fit: contain; background: #000; }
         .cat-thumb:hover img { transform: scale(1.06); }
         .idea-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
         .idea-chips .value-chip { font-size: 14px; padding: 8px 16px; }
